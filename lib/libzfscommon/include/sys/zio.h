@@ -27,6 +27,20 @@
 #ifndef _ZIO_H
 #define	_ZIO_H
 
+enum zio_checksum {
+	ZIO_CHECKSUM_INHERIT = 0,
+	ZIO_CHECKSUM_ON,
+	ZIO_CHECKSUM_OFF,
+	ZIO_CHECKSUM_LABEL,
+	ZIO_CHECKSUM_GANG_HEADER,
+	ZIO_CHECKSUM_ZILOG,
+	ZIO_CHECKSUM_FLETCHER_2,
+	ZIO_CHECKSUM_FLETCHER_4,
+	ZIO_CHECKSUM_SHA256,
+	ZIO_CHECKSUM_ZILOG2,
+	ZIO_CHECKSUM_FUNCTIONS
+};
+
 #include <sys/zfs_context.h>
 #include <sys/spa.h>
 #include <sys/txg.h>
@@ -65,20 +79,6 @@ typedef struct zio_gbh {
 	uint64_t		zg_filler[SPA_GBH_FILLER];
 	zio_eck_t		zg_tail;
 } zio_gbh_phys_t;
-
-enum zio_checksum {
-	ZIO_CHECKSUM_INHERIT = 0,
-	ZIO_CHECKSUM_ON,
-	ZIO_CHECKSUM_OFF,
-	ZIO_CHECKSUM_LABEL,
-	ZIO_CHECKSUM_GANG_HEADER,
-	ZIO_CHECKSUM_ZILOG,
-	ZIO_CHECKSUM_FLETCHER_2,
-	ZIO_CHECKSUM_FLETCHER_4,
-	ZIO_CHECKSUM_SHA256,
-	ZIO_CHECKSUM_ZILOG2,
-	ZIO_CHECKSUM_FUNCTIONS
-};
 
 #define	ZIO_CHECKSUM_ON_VALUE	ZIO_CHECKSUM_FLETCHER_4
 #define	ZIO_CHECKSUM_DEFAULT	ZIO_CHECKSUM_ON
@@ -426,22 +426,22 @@ struct zio {
 };
 
 extern zio_t *zio_null(zio_t *pio, spa_t *spa, vdev_t *vd,
-    zio_done_func_t *done, void *private, enum zio_flag flags);
+    zio_done_func_t *done, void *priv, enum zio_flag flags);
 
 extern zio_t *zio_root(spa_t *spa,
-    zio_done_func_t *done, void *private, enum zio_flag flags);
+    zio_done_func_t *done, void *priv, enum zio_flag flags);
 
 extern zio_t *zio_read(zio_t *pio, spa_t *spa, const blkptr_t *bp, void *data,
-    uint64_t size, zio_done_func_t *done, void *private,
+    uint64_t size, zio_done_func_t *done, void *priv,
     int priority, enum zio_flag flags, const zbookmark_t *zb);
 
 extern zio_t *zio_write(zio_t *pio, spa_t *spa, uint64_t txg, blkptr_t *bp,
     void *data, uint64_t size, const zio_prop_t *zp,
-    zio_done_func_t *ready, zio_done_func_t *done, void *private,
+    zio_done_func_t *ready, zio_done_func_t *done, void *priv,
     int priority, enum zio_flag flags, const zbookmark_t *zb);
 
 extern zio_t *zio_rewrite(zio_t *pio, spa_t *spa, uint64_t txg, blkptr_t *bp,
-    void *data, uint64_t size, zio_done_func_t *done, void *private,
+    void *data, uint64_t size, zio_done_func_t *done, void *priv,
     int priority, enum zio_flag flags, zbookmark_t *zb);
 
 extern void zio_write_override(zio_t *zio, blkptr_t *bp, int copies);
@@ -450,19 +450,19 @@ extern void zio_free(spa_t *spa, uint64_t txg, const blkptr_t *bp);
 
 extern zio_t *zio_claim(zio_t *pio, spa_t *spa, uint64_t txg,
     const blkptr_t *bp,
-    zio_done_func_t *done, void *private, enum zio_flag flags);
+    zio_done_func_t *done, void *priv, enum zio_flag flags);
 
 extern zio_t *zio_ioctl(zio_t *pio, spa_t *spa, vdev_t *vd, int cmd,
-    zio_done_func_t *done, void *private, int priority, enum zio_flag flags);
+    zio_done_func_t *done, void *priv, int priority, enum zio_flag flags);
 
 extern zio_t *zio_read_phys(zio_t *pio, vdev_t *vd, uint64_t offset,
     uint64_t size, void *data, int checksum,
-    zio_done_func_t *done, void *private, int priority, enum zio_flag flags,
+    zio_done_func_t *done, void *priv, int priority, enum zio_flag flags,
     boolean_t labels);
 
 extern zio_t *zio_write_phys(zio_t *pio, vdev_t *vd, uint64_t offset,
     uint64_t size, void *data, int checksum,
-    zio_done_func_t *done, void *private, int priority, enum zio_flag flags,
+    zio_done_func_t *done, void *priv, int priority, enum zio_flag flags,
     boolean_t labels);
 
 extern zio_t *zio_free_sync(zio_t *pio, spa_t *spa, uint64_t txg,
@@ -493,11 +493,11 @@ extern void zio_resubmit_stage_async(void *);
 
 extern zio_t *zio_vdev_child_io(zio_t *zio, blkptr_t *bp, vdev_t *vd,
     uint64_t offset, void *data, uint64_t size, int type, int priority,
-    enum zio_flag flags, zio_done_func_t *done, void *private);
+    enum zio_flag flags, zio_done_func_t *done, void *priv);
 
 extern zio_t *zio_vdev_delegated_io(vdev_t *vd, uint64_t offset,
     void *data, uint64_t size, int type, int priority,
-    enum zio_flag flags, zio_done_func_t *done, void *private);
+    enum zio_flag flags, zio_done_func_t *done, void *priv);
 
 extern void zio_vdev_io_bypass(zio_t *zio);
 extern void zio_vdev_io_reissue(zio_t *zio);

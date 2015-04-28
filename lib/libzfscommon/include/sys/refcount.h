@@ -66,7 +66,7 @@ void refcount_destroy(refcount_t *rc);
 void refcount_destroy_many(refcount_t *rc, uint64_t number);
 int refcount_is_zero(refcount_t *rc);
 int64_t refcount_count(refcount_t *rc);
-int64_t refcount_add(refcount_t *rc, const const void *holder_tag);
+int64_t refcount_add(refcount_t *rc, const void *holder_tag);
 int64_t refcount_remove(refcount_t *rc, const void *holder_tag);
 int64_t refcount_add_many(refcount_t *rc, uint64_t number, const void *holder_tag);
 int64_t refcount_remove_many(refcount_t *rc, uint64_t number, const void *holder_tag);
