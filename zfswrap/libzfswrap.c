@@ -976,6 +976,24 @@ int libzfswrap_lookup(libzfswrap_vfs_t *p_vfs, creden_t *p_cred, inogen_t parent
 }
 
 /**
+ * XXXX Lookup name relative to an open directory vnode
+ * @param p_vfs: the virtual file system
+ * @param p_cred: the credentials of the user
+ * @param parent: the parent file object
+ * @param psz_name: filename
+ * @param p_object: return the object node and generation (XXX shouldn't this be a vnode?)
+ * @param p_type: return the object type
+ * @return 0 in case of success, the error code overwise
+ */
+int libzfswrap_lookupnameat(libzfswrap_vfs_t *p_vfs, creden_t *p_cred,
+			    libzfswrap_vnode_t *parent, const char *psz_name,
+			    inogen_t *p_object, int *p_type)
+{
+
+  return 0;
+}
+
+/**
  * Test the access right of the given file
  * @param p_vfs: the virtual filesystem
  * @param p_cred: the credentials of the user
@@ -1072,6 +1090,24 @@ int libzfswrap_open(libzfswrap_vfs_t *p_vfs, creden_t *p_cred, inogen_t object, 
         ZFS_EXIT(p_zfsvfs);
         *pp_vnode = (libzfswrap_vnode_t*)p_vnode;
         return 0;
+}
+
+/**
+ * XXXX Open an object relative to an open directory vnode
+ * @param p_vfs: the virtual file system
+ * @param p_cred: the credentials of the user
+ * @param parent: the parent vnode
+ * @param psz_name: file name
+ * @param i_flags: the opening flags
+ * @param pp_vnode: the virtual node
+ * @return 0 in case of success, the error code overwise
+ */
+int libzfswrap_openat(libzfswrap_vfs_t *p_vfs, creden_t *p_cred,
+		      libzfswrap_vnode_t *parent, const char *psz_name, int i_flags,
+		      libzfswrap_vnode_t **pp_vnode)
+{
+
+  return 0;
 }
 
 /**
