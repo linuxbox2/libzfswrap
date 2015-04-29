@@ -23,13 +23,13 @@
 
 extern int zfs_vfsinit(int fstype, char *name);
 
-static int getattr_helper(libzfswrap_vfs_t *p_vfs, creden_t *p_cred, inogen_t object, struct stat *p_stat, uint64_t *p_gen, int *p_type);
+static int getattr_helper(lzfw_vfs_t *p_vfs, creden_t *p_cred, inogen_t object, struct stat *p_stat, uint64_t *p_gen, int *p_type);
 
 /**
  * Initialize the libzfswrap library
  * @return a handle to the library, NULL in case of error
  */
-libzfswrap_handle_t *libzfswrap_init()
+lzfw_handle_t *lzfw_init()
 {
         // Create the cache directory if it does not exist
         mkdir(ZPOOL_CACHE_DIR, 0700);
@@ -43,14 +43,14 @@ libzfswrap_handle_t *libzfswrap_init()
         if(!p_zhd)
                 libsolkerncompat_exit();
 
-        return (libzfswrap_handle_t*)p_zhd;
+        return (lzfw_handle_t*)p_zhd;
 }
 
 /**
  * Uninitialize the library
  * @param p_zhd: the libzfswrap handle
  */
-void libzfswrap_exit(libzfswrap_handle_t *p_zhd)
+void lzfw_exit(lzfw_handle_t *p_zhd)
 {
         libzfs_fini((libzfs_handle_t*)p_zhd);
         libsolkerncompat_exit();
@@ -64,8 +64,7 @@ void libzfswrap_exit(libzfswrap_handle_t *p_zhd)
  * @param ppsz_error: the error message (if any)
  * @return 0 on success, the error code overwise
  */
-int libzfswrap_zpool_create(libzfswrap_handle_t *p_zhd, const char *psz_name, const char *psz_type,
-                            const char **ppsz_dev, size_t i_dev, const char **ppsz_error)
+int lzfw_zpool_create(lzfw_handle_t *p_zhd, const char *psz_name, const char *psz_type, const char **ppsz_dev, size_t i_dev, const char **ppsz_error)
 {
         int i_error;
         nvlist_t *pnv_root    = NULL;
@@ -76,8 +75,7 @@ int libzfswrap_zpool_create(libzfswrap_handle_t *p_zhd, const char *psz_name, co
         if(!(pnv_root = lzwu_make_root_vdev(psz_type, ppsz_dev, i_dev, ppsz_error)))
                 return 1;
 
-        i_error = libzfs_zpool_create((libzfs_handle_t*)p_zhd, psz_name, pnv_root,
-                                      pnv_props, pnv_fsprops, ppsz_error);
+        i_error = libzfs_zpool_create((libzfs_handle_t*)p_zhd, psz_name, pnv_root, pnv_props, pnv_fsprops, ppsz_error);
 
         nvlist_free(pnv_props);
         nvlist_free(pnv_fsprops);
@@ -93,7 +91,7 @@ int libzfswrap_zpool_create(libzfswrap_handle_t *p_zhd, const char *psz_name, co
  * @param ppsz_error: the error message (if any)
  * @return 0 in case of success, the error code overwise
  */
-int libzfswrap_zpool_destroy(libzfswrap_handle_t *p_zhd, const char *psz_name, int b_force, const char **ppsz_error)
+int lzfw_zpool_destroy(lzfw_handle_t *p_zhd, const char *psz_name, int b_force, const char **ppsz_error)
 {
         zpool_handle_t *p_zpool;
         int i_error;
@@ -123,7 +121,7 @@ int libzfswrap_zpool_destroy(libzfswrap_handle_t *p_zhd, const char *psz_name, i
  * @param ppsz_error: the error message if any
  * @return 0 in case of success, the error code overwise
  */
-int libzfswrap_zpool_add(libzfswrap_handle_t *p_zhd, const char *psz_zpool, const char *psz_type, const char **ppsz_dev, size_t i_dev, const char **ppsz_error)
+int lzfw_zpool_add(lzfw_handle_t *p_zhd, const char *psz_zpool, const char *psz_type, const char **ppsz_dev, size_t i_dev, const char **ppsz_error)
 {
         zpool_handle_t *p_zpool;
         nvlist_t *pnv_root;
@@ -155,7 +153,7 @@ int libzfswrap_zpool_add(libzfswrap_handle_t *p_zhd, const char *psz_zpool, cons
  * @param ppsz_error: the error message if any
  * @return 0 in case of success, the error code overwise
  */
-int libzfswrap_zpool_remove(libzfswrap_handle_t *p_zhd, const char *psz_zpool, const char **ppsz_dev, size_t i_vdevs, const char **ppsz_error)
+int lzfw_zpool_remove(lzfw_handle_t *p_zhd, const char *psz_zpool, const char **ppsz_dev, size_t i_vdevs, const char **ppsz_error)
 {
         zpool_handle_t *p_zpool;
         size_t i;
@@ -185,7 +183,7 @@ int libzfswrap_zpool_remove(libzfswrap_handle_t *p_zhd, const char *psz_zpool, c
  * @param ppsz_error: the error message if any
  * @return 0 in case of success, the error code overwise
  */
-int libzfswrap_zpool_attach(libzfswrap_handle_t *p_zhd, const char *psz_zpool, const char *psz_current_dev, const char *psz_new_dev, int i_replacing, const char **ppsz_error)
+int lzfw_zpool_attach(lzfw_handle_t *p_zhd, const char *psz_zpool, const char *psz_current_dev, const char *psz_new_dev, int i_replacing, const char **ppsz_error)
 {
         zpool_handle_t *p_zpool;
         nvlist_t *pnv_root;
@@ -216,7 +214,7 @@ int libzfswrap_zpool_attach(libzfswrap_handle_t *p_zhd, const char *psz_zpool, c
  * @param ppsz_error: the error message if any
  * @return 0 in case of success, the error code overwise
  */
-int libzfswrap_zpool_detach(libzfswrap_handle_t *p_zhd, const char *psz_zpool, const char *psz_dev, const char **ppsz_error)
+int lzfw_zpool_detach(lzfw_handle_t *p_zhd, const char *psz_zpool, const char *psz_dev, const char **ppsz_error)
 {
         zpool_handle_t *p_zpool;
         int i_error;
@@ -236,7 +234,7 @@ int libzfswrap_zpool_detach(libzfswrap_handle_t *p_zhd, const char *psz_zpool, c
  * @param p_data: a obscure data pointer (the zpool property list)
  * @return 0
  */
-static int libzfswrap_zpool_list_callback(zpool_handle_t *p_zpool, void *p_data)
+static int lzfw_zpool_list_callback(zpool_handle_t *p_zpool, void *p_data)
 {
         zprop_list_t *p_zpl = (zprop_list_t*)p_data;
         char property[ZPOOL_MAXPROPLEN];
@@ -282,7 +280,7 @@ static int libzfswrap_zpool_list_callback(zpool_handle_t *p_zpool, void *p_data)
  * @param ppsz_error: the error message if any
  * @return 0 in case of success, the error code overwise
  */
-int libzfswrap_zpool_list(libzfswrap_handle_t *p_zhd, const char *psz_props, const char **ppsz_error)
+int lzfw_zpool_list(lzfw_handle_t *p_zhd, const char *psz_props, const char **ppsz_error)
 {
         zprop_list_t *p_zprop_list = NULL;
         static char psz_default_props[] = "name,size,allocated,free,capacity,dedupratio,health,altroot";
@@ -294,13 +292,13 @@ int libzfswrap_zpool_list(libzfswrap_handle_t *p_zhd, const char *psz_props, con
         }
 
         lzwu_zpool_print_list_header(p_zprop_list);
-        libzfs_zpool_iter((libzfs_handle_t*)p_zhd, libzfswrap_zpool_list_callback, p_zprop_list);
+        libzfs_zpool_iter((libzfs_handle_t*)p_zhd, lzfw_zpool_list_callback, p_zprop_list);
         zprop_free_list(p_zprop_list);
 
         return 0;
 }
 
-static int libzfswrap_zpool_status_callback(zpool_handle_t *zhp, void *data)
+static int lzfw_zpool_status_callback(zpool_handle_t *zhp, void *data)
 {
         status_cbdata_t *cbp = data;
         nvlist_t *config, *nvroot;
@@ -577,7 +575,7 @@ static int libzfswrap_zpool_status_callback(zpool_handle_t *zhp, void *data)
  * @param ppsz_error: the error message if any
  * @return 0 in case of success, the error code overwise
  */
-int libzfswrap_zpool_status(libzfswrap_handle_t *p_zhd, const char **ppsz_error)
+int lzfw_zpool_status(lzfw_handle_t *p_zhd, const char **ppsz_error)
 {
         status_cbdata_t cb_data;
         cb_data.cb_count = 0;
@@ -588,12 +586,12 @@ int libzfswrap_zpool_status(libzfswrap_handle_t *p_zhd, const char **ppsz_error)
         cb_data.cb_dedup_stats = B_FALSE;
         cb_data.p_zhd = (libzfs_handle_t*)p_zhd;
 
-        libzfs_zpool_iter((libzfs_handle_t*)p_zhd, libzfswrap_zpool_status_callback, &cb_data);
+        libzfs_zpool_iter((libzfs_handle_t*)p_zhd, lzfw_zpool_status_callback, &cb_data);
 
         return 0;
 }
 
-static int libzfswrap_zfs_list_callback(zfs_handle_t *p_zfs, void *data)
+static int lzfw_zfs_list_callback(zfs_handle_t *p_zfs, void *data)
 {
         zprop_list_t *pl = (zprop_list_t*)data;
 
@@ -669,7 +667,7 @@ static int libzfswrap_zfs_list_callback(zfs_handle_t *p_zfs, void *data)
  * @param ppsz_error: the error message if any
  * @return 0 in case of success, the error code overwise
  */
-int libzfswrap_zfs_list(libzfswrap_handle_t *p_zhd, const char *psz_props, const char **ppsz_error)
+int lzfw_zfs_list(lzfw_handle_t *p_zhd, const char *psz_props, const char **ppsz_error)
 {
         zprop_list_t *p_zprop_list = NULL;
         static char psz_default_props[] = "name,used,available,referenced,mountpoint";
@@ -681,7 +679,7 @@ int libzfswrap_zfs_list(libzfswrap_handle_t *p_zhd, const char *psz_props, const
         }
 
         lzwu_zfs_print_list_header(p_zprop_list);
-        libzfs_zfs_iter((libzfs_handle_t*)p_zhd, libzfswrap_zfs_list_callback, p_zprop_list, ppsz_error );
+        libzfs_zfs_iter((libzfs_handle_t*)p_zhd, lzfw_zfs_list_callback, p_zprop_list, ppsz_error );
         zprop_free_list(p_zprop_list);
 
         return 0;
@@ -695,7 +693,7 @@ int libzfswrap_zfs_list(libzfswrap_handle_t *p_zhd, const char *psz_props, const
  * @param ppsz_error: the error message if any
  * @return 0 in case of success, the error code overwise
  */
-int libzfswrap_zfs_snapshot(libzfswrap_handle_t *p_zhd, const char *psz_zfs, const char *psz_snapshot, const char **ppsz_error)
+int lzfw_zfs_snapshot(lzfw_handle_t *p_zhd, const char *psz_zfs, const char *psz_snapshot, const char **ppsz_error)
 {
         zfs_handle_t *p_zfs;
         int i_error;
@@ -720,7 +718,7 @@ int libzfswrap_zfs_snapshot(libzfswrap_handle_t *p_zhd, const char *psz_zfs, con
  * @param ppsz_error: the error message if any
  * @return 0 in case of success, the error code overwise
  */
-int libzfswrap_zfs_snapshot_destroy(libzfswrap_handle_t *p_zhd, const char *psz_zfs, const char *psz_snapshot, const char **ppsz_error)
+int lzfw_zfs_snapshot_destroy(lzfw_handle_t *p_zhd, const char *psz_zfs, const char *psz_snapshot, const char **ppsz_error)
 {
         zpool_handle_t *p_zpool;
         int i_error;
@@ -749,7 +747,7 @@ int libzfswrap_zfs_snapshot_destroy(libzfswrap_handle_t *p_zhd, const char *psz_
  * @param ppsz_error: the error message if any
  * @return 0 in case of success, the error code overwise
  */
-int libzfswrap_zfs_list_snapshot(libzfswrap_handle_t *p_zhd, const char *psz_zfs, const char **ppsz_error)
+int lzfw_zfs_list_snapshot(lzfw_handle_t *p_zhd, const char *psz_zfs, const char **ppsz_error)
 {
         zprop_list_t *p_zprop_list = NULL;
         static char psz_default_props[] = "name,used,available,referenced,mountpoint";
@@ -761,7 +759,7 @@ int libzfswrap_zfs_list_snapshot(libzfswrap_handle_t *p_zhd, const char *psz_zfs
 
         lzwu_zfs_print_list_header(p_zprop_list);
 
-        return libzfs_zfs_snapshot_iter((libzfs_handle_t*)p_zhd, psz_zfs, libzfswrap_zfs_list_callback, p_zprop_list, ppsz_error);
+        return libzfs_zfs_snapshot_iter((libzfs_handle_t*)p_zhd, psz_zfs, lzfw_zfs_list_callback, p_zprop_list, ppsz_error);
 }
 
 typedef struct
@@ -770,7 +768,7 @@ typedef struct
         size_t i_num;
 }callback_data_t;
 
-static int libzfswrap_zfs_get_list_snapshots_callback(zfs_handle_t *p_zfs, void *data)
+static int lzfw_zfs_get_list_snapshots_callback(zfs_handle_t *p_zfs, void *data)
 {
         callback_data_t *p_cb = (callback_data_t*)data;
         p_cb->i_num++;
@@ -787,11 +785,11 @@ static int libzfswrap_zfs_get_list_snapshots_callback(zfs_handle_t *p_zfs, void 
  * @param ppsz_error: the error message if any
  * @return the number of snapshots in case of success, -1 overwise
  */
-int libzfswrap_zfs_get_list_snapshots(libzfswrap_handle_t *p_zhd, const char *psz_zfs, char ***pppsz_snapshots, const char **ppsz_error)
+int lzfw_zfs_get_list_snapshots(lzfw_handle_t *p_zhd, const char *psz_zfs, char ***pppsz_snapshots, const char **ppsz_error)
 {
         callback_data_t cb = { .ppsz_names = NULL, .i_num = 0 };
         if(libzfs_zfs_snapshot_iter((libzfs_handle_t*)p_zhd, psz_zfs,
-                                    libzfswrap_zfs_get_list_snapshots_callback,
+                                    lzfw_zfs_get_list_snapshots_callback,
                                     &cb, ppsz_error))
                 return -1;
 
@@ -807,7 +805,7 @@ extern vfsops_t *zfs_vfsops;
  * @param psz_options: options for the mounting point
  * @return the vitual file system
  */
-libzfswrap_vfs_t *libzfswrap_mount(const char *psz_zpool, const char *psz_dir, const char *psz_options)
+lzfw_vfs_t *lzfw_mount(const char *psz_zpool, const char *psz_dir, const char *psz_options)
 {
         vfs_t *p_vfs = calloc(1, sizeof(vfs_t));
         if(!p_vfs)
@@ -834,7 +832,7 @@ libzfswrap_vfs_t *libzfswrap_mount(const char *psz_zpool, const char *psz_dir, c
                 free(p_vfs);
                 return NULL;
         }
-        return (libzfswrap_vfs_t*)p_vfs;
+        return (lzfw_vfs_t*)p_vfs;
 }
 
 /**
@@ -843,7 +841,7 @@ libzfswrap_vfs_t *libzfswrap_mount(const char *psz_zpool, const char *psz_dir, c
  * @param p_root: return the root object
  * @return 0 on success, the error code overwise
  */
-int libzfswrap_getroot(libzfswrap_vfs_t *p_vfs, inogen_t *p_root)
+int lzfw_getroot(lzfw_vfs_t *p_vfs, inogen_t *p_root)
 {
         zfsvfs_t *p_zfsvfs = ((vfs_t*)p_vfs)->vfs_data;
         znode_t *p_znode;
@@ -871,7 +869,7 @@ int libzfswrap_getroot(libzfswrap_vfs_t *p_vfs, inogen_t *p_root)
  * @param b_force: force the unmount ?
  * @return 0 in case of success, the error code overwise
  */
-int libzfswrap_umount(libzfswrap_vfs_t *p_vfs, int b_force)
+int lzfw_umount(lzfw_vfs_t *p_vfs, int b_force)
 {
         int i_error;
         cred_t cred = { .cr_uid = 0, .cr_gid = 0 };
@@ -894,7 +892,7 @@ int libzfswrap_umount(libzfswrap_vfs_t *p_vfs, int b_force)
  * @param p_stats: the statistics
  * @return 0 in case of success, -1 overwise
  */
-int libzfswrap_statfs(libzfswrap_vfs_t *p_vfs, struct statvfs *p_statvfs)
+int lzfw_statfs(lzfw_vfs_t *p_vfs, struct statvfs *p_statvfs)
 {
         //FIXME: no ZFS_ENTER ??
         struct statvfs64 zfs_stats = { 0 };
@@ -927,7 +925,7 @@ int libzfswrap_statfs(libzfswrap_vfs_t *p_vfs, struct statvfs *p_statvfs)
  * @param p_type: return the object type
  * @return 0 in case of success, the error code overwise
  */
-int libzfswrap_lookup(libzfswrap_vfs_t *p_vfs, creden_t *p_cred, inogen_t parent, const char *psz_name, inogen_t *p_object, int *p_type)
+int lzfw_lookup(lzfw_vfs_t *p_vfs, creden_t *p_cred, inogen_t parent, const char *psz_name, inogen_t *p_object, int *p_type)
 {
         if(strlen(psz_name) >= MAXNAMELEN)
                 return -1;
@@ -985,8 +983,8 @@ int libzfswrap_lookup(libzfswrap_vfs_t *p_vfs, creden_t *p_cred, inogen_t parent
  * @param p_type: return the object type
  * @return 0 in case of success, the error code overwise
  */
-int libzfswrap_lookupnameat(libzfswrap_vfs_t *p_vfs, creden_t *p_cred,
-			    libzfswrap_vnode_t *parent, const char *psz_name,
+int lzfw_lookupnameat(lzfw_vfs_t *p_vfs, creden_t *p_cred,
+			    lzfw_vnode_t *parent, const char *psz_name,
 			    inogen_t *p_object, int *p_type)
 {
 
@@ -1001,7 +999,7 @@ int libzfswrap_lookupnameat(libzfswrap_vfs_t *p_vfs, creden_t *p_cred,
  * @param mask: the rights to check
  * @return 0 in case of success, the error code overwise
  */
-int libzfswrap_access(libzfswrap_vfs_t *p_vfs, creden_t *p_cred, inogen_t object, int mask)
+int lzfw_access(lzfw_vfs_t *p_vfs, creden_t *p_cred, inogen_t object, int mask)
 {
         zfsvfs_t *p_zfsvfs = ((vfs_t*)p_vfs)->vfs_data;
         znode_t *p_znode;
@@ -1050,7 +1048,7 @@ int libzfswrap_access(libzfswrap_vfs_t *p_vfs, creden_t *p_cred, inogen_t object
  * @param pp_vnode: the virtual node
  * @return 0 in case of success, the error code overwise
  */
-int libzfswrap_open(libzfswrap_vfs_t *p_vfs, creden_t *p_cred, inogen_t object, int i_flags, libzfswrap_vnode_t **pp_vnode)
+int lzfw_open(lzfw_vfs_t *p_vfs, creden_t *p_cred, inogen_t object, int i_flags, lzfw_vnode_t **pp_vnode)
 {
         zfsvfs_t *p_zfsvfs = ((vfs_t*)p_vfs)->vfs_data;
         int mode = 0, flags = 0, i_error;
@@ -1088,7 +1086,7 @@ int libzfswrap_open(libzfswrap_vfs_t *p_vfs, creden_t *p_cred, inogen_t object, 
         ASSERT(p_old_vnode == p_vnode);
 
         ZFS_EXIT(p_zfsvfs);
-        *pp_vnode = (libzfswrap_vnode_t*)p_vnode;
+        *pp_vnode = (lzfw_vnode_t*)p_vnode;
         return 0;
 }
 
@@ -1102,9 +1100,9 @@ int libzfswrap_open(libzfswrap_vfs_t *p_vfs, creden_t *p_cred, inogen_t object, 
  * @param pp_vnode: the virtual node
  * @return 0 in case of success, the error code overwise
  */
-int libzfswrap_openat(libzfswrap_vfs_t *p_vfs, creden_t *p_cred,
-		      libzfswrap_vnode_t *parent, const char *psz_name, int i_flags,
-		      libzfswrap_vnode_t **pp_vnode)
+int lzfw_openat(lzfw_vfs_t *p_vfs, creden_t *p_cred,
+		      lzfw_vnode_t *parent, const char *psz_name, int i_flags,
+		      lzfw_vnode_t **pp_vnode)
 {
 
   return 0;
@@ -1120,7 +1118,7 @@ int libzfswrap_openat(libzfswrap_vfs_t *p_vfs, creden_t *p_cred,
  * @param p_file: return the file
  * @return 0 in case of success the error code overwise
  */
-int libzfswrap_create(libzfswrap_vfs_t *p_vfs, creden_t *p_cred, inogen_t parent, const char *psz_filename, mode_t mode, inogen_t *p_file)
+int lzfw_create(lzfw_vfs_t *p_vfs, creden_t *p_cred, inogen_t parent, const char *psz_filename, mode_t mode, inogen_t *p_file)
 {
         zfsvfs_t *p_zfsvfs = ((vfs_t*)p_vfs)->vfs_data;
         int i_error;
@@ -1175,7 +1173,7 @@ int libzfswrap_create(libzfswrap_vfs_t *p_vfs, creden_t *p_cred, inogen_t parent
  * @param pp_vnode: the vnode to return
  * @return 0 on success, the error code overwise
  */
-int libzfswrap_opendir(libzfswrap_vfs_t *p_vfs, creden_t *p_cred, inogen_t directory, libzfswrap_vnode_t **pp_vnode)
+int lzfw_opendir(lzfw_vfs_t *p_vfs, creden_t *p_cred, inogen_t directory, lzfw_vnode_t **pp_vnode)
 {
         zfsvfs_t *p_zfsvfs = ((vfs_t*)p_vfs)->vfs_data;
         int i_error;
@@ -1217,7 +1215,7 @@ int libzfswrap_opendir(libzfswrap_vfs_t *p_vfs, creden_t *p_cred, inogen_t direc
         ASSERT(p_old_vnode == p_vnode);
 
         ZFS_EXIT(p_zfsvfs);
-        *pp_vnode = (libzfswrap_vnode_t*)p_vnode;
+        *pp_vnode = (lzfw_vnode_t*)p_vnode;
         return 0;
 }
 
@@ -1231,7 +1229,7 @@ int libzfswrap_opendir(libzfswrap_vfs_t *p_vfs, creden_t *p_cred, inogen_t direc
  * @param cookie: the offset to read in the directory
  * @return 0 on success, the error code overwise
  */
-int libzfswrap_readdir(libzfswrap_vfs_t *p_vfs, creden_t *p_cred, libzfswrap_vnode_t *p_vnode, libzfswrap_entry_t *p_entries, size_t size, off_t *cookie)
+int lzfw_readdir(lzfw_vfs_t *p_vfs, creden_t *p_cred, lzfw_vnode_t *p_vnode, lzfw_entry_t *p_entries, size_t size, off_t *cookie)
 {
         zfsvfs_t *p_zfsvfs = ((vfs_t*)p_vfs)->vfs_data;
 
@@ -1301,9 +1299,9 @@ int libzfswrap_readdir(libzfswrap_vfs_t *p_vfs, creden_t *p_cred, libzfswrap_vno
  * @param p_vnode: the vnode
  * @return 0 on success, the error code overwise
  */
-int libzfswrap_closedir(libzfswrap_vfs_t *p_vfs, creden_t *p_cred, libzfswrap_vnode_t *p_vnode)
+int lzfw_closedir(lzfw_vfs_t *p_vfs, creden_t *p_cred, lzfw_vnode_t *p_vnode)
 {
-        return libzfswrap_close(p_vfs, p_cred, p_vnode, O_RDONLY);
+        return lzfw_close(p_vfs, p_cred, p_vnode, O_RDONLY);
 }
 
 /**
@@ -1314,7 +1312,7 @@ int libzfswrap_closedir(libzfswrap_vfs_t *p_vfs, creden_t *p_cred, libzfswrap_vn
  * @param p_stat: the stat struct to fill in
  * @return 0 on success, the error code overwise
  */
-int libzfswrap_stat(libzfswrap_vfs_t *p_vfs, creden_t *p_cred, libzfswrap_vnode_t *p_vnode, struct stat *p_stat)
+int lzfw_stat(lzfw_vfs_t *p_vfs, creden_t *p_cred, lzfw_vnode_t *p_vnode, struct stat *p_stat)
 {
         zfsvfs_t *p_zfsvfs = ((vfs_t*)p_vfs)->vfs_data;
         vattr_t vattr;
@@ -1344,7 +1342,7 @@ int libzfswrap_stat(libzfswrap_vfs_t *p_vfs, creden_t *p_cred, libzfswrap_vnode_
         return 0;
 }
 
-static int getattr_helper(libzfswrap_vfs_t *p_vfs, creden_t *p_cred, inogen_t object, struct stat *p_stat, uint64_t *p_gen, int *p_type)
+static int getattr_helper(lzfw_vfs_t *p_vfs, creden_t *p_cred, inogen_t object, struct stat *p_stat, uint64_t *p_gen, int *p_type)
 {
         zfsvfs_t *p_zfsvfs = ((vfs_t*)p_vfs)->vfs_data;
         int i_error;
@@ -1405,7 +1403,7 @@ static int getattr_helper(libzfswrap_vfs_t *p_vfs, creden_t *p_cred, inogen_t ob
  * @param p_type: return the type of the object
  * @return 0 on success, the error code overwise
  */
-int libzfswrap_getattr(libzfswrap_vfs_t *p_vfs, creden_t *p_cred, inogen_t object, struct stat *p_stat, int *p_type)
+int lzfw_getattr(lzfw_vfs_t *p_vfs, creden_t *p_cred, inogen_t object, struct stat *p_stat, int *p_type)
 {
         zfsvfs_t *p_zfsvfs = ((vfs_t*)p_vfs)->vfs_data;
         int i_error;
@@ -1426,7 +1424,7 @@ int libzfswrap_getattr(libzfswrap_vfs_t *p_vfs, creden_t *p_cred, inogen_t objec
  * @param p_new_stat: new attributes of the object
  * @return 0 on success, the error code overwise
  */
-int libzfswrap_setattr(libzfswrap_vfs_t *p_vfs, creden_t *p_cred, inogen_t object, struct stat *p_stat, int flags, struct stat *p_new_stat)
+int lzfw_setattr(lzfw_vfs_t *p_vfs, creden_t *p_cred, inogen_t object, struct stat *p_stat, int flags, struct stat *p_new_stat)
 {
         zfsvfs_t *p_zfsvfs = ((vfs_t*)p_vfs)->vfs_data;
         int i_error;
@@ -1540,7 +1538,7 @@ int xattr_helper(zfsvfs_t *p_zfsvfs, creden_t *p_cred, inogen_t object, vnode_t 
  * @param p_size: will contain the size of the buffer
  * @return 0 in case of success, the error code overwise
  */
-int libzfswrap_listxattr(libzfswrap_vfs_t *p_vfs, creden_t *p_cred, inogen_t object, char **ppsz_buffer, size_t *p_size)
+int lzfw_listxattr(lzfw_vfs_t *p_vfs, creden_t *p_cred, inogen_t object, char **ppsz_buffer, size_t *p_size)
 {
         zfsvfs_t *p_zfsvfs = ((vfs_t*)p_vfs)->vfs_data;
         int i_error;
@@ -1630,7 +1628,7 @@ int libzfswrap_listxattr(libzfswrap_vfs_t *p_vfs, creden_t *p_cred, inogen_t obj
  * @param psz_value: the value
  * @return 0 in case of success, the error code overwise
  */
-int libzfswrap_setxattr(libzfswrap_vfs_t *p_vfs, creden_t *p_cred, inogen_t object, const char *psz_key, const char *psz_value)
+int lzfw_setxattr(lzfw_vfs_t *p_vfs, creden_t *p_cred, inogen_t object, const char *psz_key, const char *psz_value)
 {
         zfsvfs_t *p_zfsvfs = ((vfs_t*)p_vfs)->vfs_data;
         int i_error;
@@ -1698,7 +1696,7 @@ int libzfswrap_setxattr(libzfswrap_vfs_t *p_vfs, creden_t *p_cred, inogen_t obje
  * @param ppsz_value: the value
  * @return 0 in case of success, the error code overwise
  */
-int libzfswrap_getxattr(libzfswrap_vfs_t *p_vfs, creden_t *p_cred, inogen_t object, const char *psz_key, char **ppsz_value)
+int lzfw_getxattr(lzfw_vfs_t *p_vfs, creden_t *p_cred, inogen_t object, const char *psz_key, char **ppsz_value)
 {
         zfsvfs_t *p_zfsvfs = ((vfs_t*)p_vfs)->vfs_data;
         int i_error;
@@ -1777,7 +1775,7 @@ int libzfswrap_getxattr(libzfswrap_vfs_t *p_vfs, creden_t *p_cred, inogen_t obje
  * @param psz_key: the key
  * @return 0 in case of success, the error code overwise
  */
-int libzfswrap_removexattr(libzfswrap_vfs_t *p_vfs, creden_t *p_cred, inogen_t object, const char *psz_key)
+int lzfw_removexattr(lzfw_vfs_t *p_vfs, creden_t *p_cred, inogen_t object, const char *psz_key)
 {
         zfsvfs_t *p_zfsvfs = ((vfs_t*)p_vfs)->vfs_data;
         int i_error;
@@ -1809,7 +1807,7 @@ int libzfswrap_removexattr(libzfswrap_vfs_t *p_vfs, creden_t *p_cred, inogen_t o
  * @param offset: the offset to read
  * @return 0 in case of success, the error code overwise
  */
-int libzfswrap_read(libzfswrap_vfs_t *p_vfs, creden_t *p_cred, libzfswrap_vnode_t *p_vnode, void *p_buffer, size_t size, int behind, off_t offset)
+int lzfw_read(lzfw_vfs_t *p_vfs, creden_t *p_cred, lzfw_vnode_t *p_vnode, void *p_buffer, size_t size, int behind, off_t offset)
 {
         zfsvfs_t *p_zfsvfs = ((vfs_t*)p_vfs)->vfs_data;
         iovec_t iovec;
@@ -1850,7 +1848,7 @@ int libzfswrap_read(libzfswrap_vfs_t *p_vfs, creden_t *p_cred, libzfswrap_vnode_
  * @param offset: the offset to write
  * @return 0 in case of success, the error code overwise
  */
-int libzfswrap_write(libzfswrap_vfs_t *p_vfs, creden_t *p_cred, libzfswrap_vnode_t *p_vnode, void *p_buffer, size_t size, int behind, off_t offset)
+int lzfw_write(lzfw_vfs_t *p_vfs, creden_t *p_cred, lzfw_vnode_t *p_vnode, void *p_buffer, size_t size, int behind, off_t offset)
 {
         zfsvfs_t *p_zfsvfs = ((vfs_t*)p_vfs)->vfs_data;
         iovec_t iovec;
@@ -1883,7 +1881,7 @@ int libzfswrap_write(libzfswrap_vfs_t *p_vfs, creden_t *p_cred, libzfswrap_vnode
  * @param i_flags: the flags given when opening
  * @return 0 in case of success, the error code overwise
  */
-int libzfswrap_close(libzfswrap_vfs_t *p_vfs, creden_t *p_cred, libzfswrap_vnode_t *p_vnode, int i_flags)
+int lzfw_close(lzfw_vfs_t *p_vfs, creden_t *p_cred, lzfw_vnode_t *p_vnode, int i_flags)
 {
         zfsvfs_t *p_zfsvfs = ((vfs_t*)p_vfs)->vfs_data;
 
@@ -1907,7 +1905,7 @@ int libzfswrap_close(libzfswrap_vfs_t *p_vfs, creden_t *p_cred, libzfswrap_vnode
  * @param p_directory: return the new directory
  * @return 0 on success, the error code overwise
  */
-int libzfswrap_mkdir(libzfswrap_vfs_t *p_vfs, creden_t *p_cred, inogen_t parent, const char *psz_name, mode_t mode, inogen_t *p_directory)
+int lzfw_mkdir(lzfw_vfs_t *p_vfs, creden_t *p_cred, inogen_t parent, const char *psz_name, mode_t mode, inogen_t *p_directory)
 {
         zfsvfs_t *p_zfsvfs = ((vfs_t*)p_vfs)->vfs_data;
         int i_error;
@@ -1962,7 +1960,7 @@ int libzfswrap_mkdir(libzfswrap_vfs_t *p_vfs, creden_t *p_cred, inogen_t parent,
  * @param psz_filename: name of the file to unlink
  * @return 0 on success, the error code overwise
  */
-int libzfswrap_rmdir(libzfswrap_vfs_t *p_vfs, creden_t *p_cred, inogen_t parent, const char *psz_filename)
+int lzfw_rmdir(lzfw_vfs_t *p_vfs, creden_t *p_cred, inogen_t parent, const char *psz_filename)
 {
         zfsvfs_t *p_zfsvfs = ((vfs_t*)p_vfs)->vfs_data;
         int i_error;
@@ -2004,7 +2002,7 @@ int libzfswrap_rmdir(libzfswrap_vfs_t *p_vfs, creden_t *p_cred, inogen_t parent,
  * @param p_symlink: the new symlink
  * @return 0 on success, the error code overwise
  */
-int libzfswrap_symlink(libzfswrap_vfs_t *p_vfs, creden_t *p_cred, inogen_t parent, const char *psz_name, const char *psz_link, inogen_t *p_symlink)
+int lzfw_symlink(lzfw_vfs_t *p_vfs, creden_t *p_cred, inogen_t parent, const char *psz_name, const char *psz_link, inogen_t *p_symlink)
 {
         zfsvfs_t *p_zfsvfs = ((vfs_t*)p_vfs)->vfs_data;
         int i_error;
@@ -2067,7 +2065,7 @@ int libzfswrap_symlink(libzfswrap_vfs_t *p_vfs, creden_t *p_cred, inogen_t paren
  * @param content_size: size of the buffer
  * @return 0 on success, the error code overwise
  */
-int libzfswrap_readlink(libzfswrap_vfs_t *p_vfs, creden_t *p_cred, inogen_t symlink, char *psz_content, size_t content_size)
+int lzfw_readlink(lzfw_vfs_t *p_vfs, creden_t *p_cred, inogen_t symlink, char *psz_content, size_t content_size)
 {
         zfsvfs_t *p_zfsvfs = ((vfs_t*)p_vfs)->vfs_data;
         int i_error;
@@ -2125,7 +2123,7 @@ int libzfswrap_readlink(libzfswrap_vfs_t *p_vfs, creden_t *p_cred, inogen_t syml
  * @param psz_name: name of the link
  * @return 0 on success, the error code overwise
  */
-int libzfswrap_link(libzfswrap_vfs_t *p_vfs, creden_t *p_cred, inogen_t parent, inogen_t target, const char *psz_name)
+int lzfw_link(lzfw_vfs_t *p_vfs, creden_t *p_cred, inogen_t parent, inogen_t target, const char *psz_name)
 {
         zfsvfs_t *p_zfsvfs = ((vfs_t*)p_vfs)->vfs_data;
         int i_error;
@@ -2181,7 +2179,7 @@ int libzfswrap_link(libzfswrap_vfs_t *p_vfs, creden_t *p_cred, inogen_t parent, 
  * @param psz_filename: name of the file to unlink
  * @return 0 on success, the error code overwise
  */
-int libzfswrap_unlink(libzfswrap_vfs_t *p_vfs, creden_t *p_cred, inogen_t parent, const char *psz_filename)
+int lzfw_unlink(lzfw_vfs_t *p_vfs, creden_t *p_cred, inogen_t parent, const char *psz_filename)
 {
         zfsvfs_t *p_zfsvfs = ((vfs_t*)p_vfs)->vfs_data;
         int i_error;
@@ -2223,7 +2221,7 @@ int libzfswrap_unlink(libzfswrap_vfs_t *p_vfs, creden_t *p_cred, inogen_t parent
  * @param psz_new_filename: new file name
  * @return 0 on success, the error code overwise
  */
-int libzfswrap_rename(libzfswrap_vfs_t *p_vfs, creden_t *p_cred, inogen_t parent, const char *psz_filename, inogen_t new_parent, const char *psz_new_filename)
+int lzfw_rename(lzfw_vfs_t *p_vfs, creden_t *p_cred, inogen_t parent, const char *psz_filename, inogen_t new_parent, const char *psz_new_filename)
 {
         zfsvfs_t *p_zfsvfs = ((vfs_t*)p_vfs)->vfs_data;
         znode_t *p_parent_znode, *p_new_parent_znode;
@@ -2284,7 +2282,7 @@ int libzfswrap_rename(libzfswrap_vfs_t *p_vfs, creden_t *p_cred, inogen_t parent
  * @param size: the new size
  * @return 0 in case of success, the error code overwise
  */
-int libzfswrap_truncate(libzfswrap_vfs_t *p_vfs, creden_t *p_cred, inogen_t file, size_t size)
+int lzfw_truncate(lzfw_vfs_t *p_vfs, creden_t *p_cred, inogen_t file, size_t size)
 {
         zfsvfs_t *p_zfsvfs = ((vfs_t*)p_vfs)->vfs_data;
         znode_t *p_znode;

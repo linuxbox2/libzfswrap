@@ -18,7 +18,7 @@ static void usage(const char *psz_prog)
 
 int main(int argc, char *argv[])
 {
-        libzfswrap_handle_t *p_zhd;
+        lzfw_handle_t *p_zhd;
         const char *psz_error;
         int i_error;
 
@@ -27,27 +27,27 @@ int main(int argc, char *argv[])
                 usage(argc > 0 ? argv[0] : "");
 
         /* Initialize the library */
-        p_zhd = libzfswrap_init();
+        p_zhd = lzfw_init();
 
         /* Find the right command */
         if(!strcmp(argv[1], "list"))
         {
                 if(argc == 2)
-                        i_error = libzfswrap_zfs_list(p_zhd, NULL, &psz_error);
+                        i_error = lzfw_zfs_list(p_zhd, NULL, &psz_error);
                 else if(argc == 3)
-                        i_error = libzfswrap_zfs_list_snapshot(p_zhd, argv[2], &psz_error);
+                        i_error = lzfw_zfs_list_snapshot(p_zhd, argv[2], &psz_error);
                 else
                         goto error;
         }
         else if(!strcmp(argv[1], "snapshot"))
         {
                 if(argc != 4) goto error;
-                i_error = libzfswrap_zfs_snapshot(p_zhd, argv[2], argv[3], &psz_error);
+                i_error = lzfw_zfs_snapshot(p_zhd, argv[2], argv[3], &psz_error);
         }
         else if(!strcmp(argv[1], "destroy"))
         {
                 if(argc != 4) goto error;
-                i_error = libzfswrap_zfs_snapshot_destroy(p_zhd, argv[2], argv[3], &psz_error);
+                i_error = lzfw_zfs_snapshot_destroy(p_zhd, argv[2], argv[3], &psz_error);
         }
         else
         {
@@ -58,10 +58,10 @@ int main(int argc, char *argv[])
         if(i_error)
                 fprintf(stderr, "%s\n", psz_error);
 
-        libzfswrap_exit(p_zhd);
+        lzfw_exit(p_zhd);
         return i_error;
 
 error:
-        libzfswrap_exit(p_zhd);
+        lzfw_exit(p_zhd);
         usage(argv[0]);
 }

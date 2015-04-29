@@ -23,7 +23,7 @@ void usage(const char *psz_prog)
 
 int main(int argc, const char **argv)
 {
-        libzfswrap_handle_t *p_zhd;
+        lzfw_handle_t *p_zhd;
         const char *psz_error;
         int i_error;
 
@@ -32,56 +32,56 @@ int main(int argc, const char **argv)
                 usage(argc > 0 ? argv[0] : "");
 
         /* Initialize the library */
-        p_zhd = libzfswrap_init();
+        p_zhd = lzfw_init();
 
         /* Find the right command */
         if(!strcmp(argv[1], "create"))
         {
                 if(argc < 5) goto error;
-                i_error = libzfswrap_zpool_create(p_zhd, argv[2], argv[3], &argv[4], argc - 4, &psz_error);
+                i_error = lzfw_zpool_create(p_zhd, argv[2], argv[3], &argv[4], argc - 4, &psz_error);
         }
         else if(!strcmp(argv[1], "destroy"))
         {
                 if(argc == 3)
-                        i_error = libzfswrap_zpool_destroy(p_zhd, argv[2], 0, &psz_error);
+                        i_error = lzfw_zpool_destroy(p_zhd, argv[2], 0, &psz_error);
                 else if(argc == 4 && !strcmp(argv[2], "-f"))
-                        i_error = libzfswrap_zpool_destroy(p_zhd, argv[3], 1, &psz_error);
+                        i_error = lzfw_zpool_destroy(p_zhd, argv[3], 1, &psz_error);
                 else
                         goto error;
         }
         else if(!strcmp(argv[1], "add"))
         {
                 if(argc < 5) goto error;
-                i_error = libzfswrap_zpool_add(p_zhd, argv[2], argv[3], &argv[4], argc - 4, &psz_error);
+                i_error = lzfw_zpool_add(p_zhd, argv[2], argv[3], &argv[4], argc - 4, &psz_error);
         }
         else if(!strcmp(argv[1], "attach"))
         {
                 if(argc != 5) goto error;
-                i_error = libzfswrap_zpool_attach(p_zhd, argv[2], argv[3], argv[4], 0, &psz_error);
+                i_error = lzfw_zpool_attach(p_zhd, argv[2], argv[3], argv[4], 0, &psz_error);
         }
         else if(!strcmp(argv[1], "detach"))
         {
                 if(argc != 4) goto error;
-                i_error = libzfswrap_zpool_detach(p_zhd, argv[2], argv[3], &psz_error);
+                i_error = lzfw_zpool_detach(p_zhd, argv[2], argv[3], &psz_error);
         }
         else if(!strcmp(argv[1], "replace"))
         {
                 if(argc != 5) goto error;
-                i_error = libzfswrap_zpool_attach(p_zhd, argv[2], argv[3], argv[4], 1, &psz_error);
+                i_error = lzfw_zpool_attach(p_zhd, argv[2], argv[3], argv[4], 1, &psz_error);
         }
         else if(!strcmp(argv[1], "list"))
         {
                 if(argc == 2)
-                        i_error = libzfswrap_zpool_list(p_zhd, NULL, &psz_error);
+                        i_error = lzfw_zpool_list(p_zhd, NULL, &psz_error);
                 else if(argc == 3)
-                        i_error = libzfswrap_zpool_list(p_zhd, argv[2], &psz_error);
+                        i_error = lzfw_zpool_list(p_zhd, argv[2], &psz_error);
                 else
                         goto error;
         }
         else if(! strcmp(argv[1], "status"))
         {
                 if(argc != 2) goto error;
-                i_error = libzfswrap_zpool_status(p_zhd, &psz_error);
+                i_error = lzfw_zpool_status(p_zhd, &psz_error);
         }
         else
         {
@@ -92,10 +92,10 @@ int main(int argc, const char **argv)
         if(i_error)
                 fprintf(stderr, "%s\n", psz_error);
 
-        libzfswrap_exit(p_zhd);
+        lzfw_exit(p_zhd);
         return 0;
 
 error:
-        libzfswrap_exit(p_zhd);
+        lzfw_exit(p_zhd);
         usage(argv[0]);
 }

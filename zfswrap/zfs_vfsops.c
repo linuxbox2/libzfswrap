@@ -2045,7 +2045,7 @@ zfs_resume_fs(zfsvfs_t *zfsvfs, const char *osname)
 		 * unmount this file system.
 		 */
 		if (vn_vfswlock(zfsvfs->z_vfs->vfs_vnodecovered) == 0)
-			(void) libzfswrap_umount(zfsvfs->z_vfs, MS_FORCE);
+			(void) lzfw_umount(zfsvfs->z_vfs, MS_FORCE);
 	}
 	return (err);
 }

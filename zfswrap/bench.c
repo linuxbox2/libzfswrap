@@ -55,12 +55,12 @@ char psz_buffer[BUFF_SIZE_MAX];
 void read_file(vfs_t *p_vfs, vnode_t *p_vnode, size_t i_size)
 {
         size_t offset = 0;
-//        size_t read = libzfswrap_read(p_vfs, p_vnode, psz_buffer, i_size, 0, offset);
+//        size_t read = lzfw_read(p_vfs, p_vnode, psz_buffer, i_size, 0, offset);
 //        while(read)
         {
                 printf("%s", psz_buffer);
                 offset += i_size;
-//                read = libzfswrap_read(p_vfs, p_vnode, psz_buffer, i_size, 0, offset);
+//                read = lzfw_read(p_vfs, p_vnode, psz_buffer, i_size, 0, offset);
         }
 }
 
@@ -70,11 +70,11 @@ int main(int argc, char *argv[])
                 return 3;
         const char *psz_filename = argv[1];
         size_t block_size = atoi(argv[2]);
-        libzfs_handle_t *zhd = libzfswrap_init();
+        libzfs_handle_t *zhd = lzfw_init();
         if(!zhd)
         {
                 printf("Unable to initialize libzfs\n");
-                libzfswrap_exit(zhd);
+                lzfw_exit(zhd);
                 return 1;
         }
 
@@ -84,20 +84,20 @@ int main(int argc, char *argv[])
         /** Do some fancy stuffs */
         // Virtually mount the filesystem
         printf("mounting the zpool /tank\n");
-        vfs_t *p_vfs = libzfswrap_mount( "tank", "/tank", "");
+        vfs_t *p_vfs = lzfw_mount( "tank", "/tank", "");
         if(!p_vfs)
         {
                 printf("Unable to mount the zpool\n");
-                libzfswrap_exit(zhd);
+                lzfw_exit(zhd);
                 return 2;
         }
 
 #if 0
         // Print some statistics about the filesystem
         struct statvfs statvfs;
-        if(libzfswrap_statfs(p_vfs, &statvfs))
+        if(lzfw_statfs(p_vfs, &statvfs))
         {
-                libzfswrap_exit(zhd);
+                lzfw_exit(zhd);
                 return 2;
         }
         printf("=========\n");
@@ -114,30 +114,30 @@ int main(int argc, char *argv[])
 
         // Lookup for the file
         int i_error, fd, type;
-        if((i_error = libzfswrap_lookup(p_vfs, 3, psz_filename, &fd, &type)))
+        if((i_error = lzfw_lookup(p_vfs, 3, psz_filename, &fd, &type)))
         {
                 printf("Unable to lookup for '%s', error %i\n", psz_filename, i_error);
-                libzfswrap_exit(zhd);
+                lzfw_exit(zhd);
                 return 2;
         }
         printf("Filename(fd) = %s(%i)\n", psz_filename, fd);
 
         // Open the file
         vnode_t *p_vnode;
-        if((i_error = libzfswrap_open(p_vfs, fd, O_RDONLY | O_LARGEFILE, &p_vnode)))
+        if((i_error = lzfw_open(p_vfs, fd, O_RDONLY | O_LARGEFILE, &p_vnode)))
         {
                 printf("Unable to open '%s', error %i\n", psz_filename, i_error);
-                libzfswrap_exit(zhd);
+                lzfw_exit(zhd);
                 return 2;
         }
         printf("\tp_vnode = 0x%jx\n", (uintmax_t)p_vnode);
 
         // Get file attributes
         struct stat fstat;
-        if((i_error = libzfswrap_stat(p_vfs, p_vnode, &fstat)))
+        if((i_error = lzfw_stat(p_vfs, p_vnode, &fstat)))
         {
                 printf("Unable to get attributes from '%s', error: %i\n", psz_filename, i_error);
-                libzfswrap_exit(zhd);
+                lzfw_exit(zhd);
                 return 2;
         }
         printf("\tDevice: %lu\n", fstat.st_dev);
@@ -157,10 +157,10 @@ int main(int argc, char *argv[])
         read_file(p_vfs, p_vnode, block_size);
 
         // Close the file
-        if((i_error = libzfswrap_close(p_vfs, p_vnode, O_RDONLY | O_LARGEFILE)))
+        if((i_error = lzfw_close(p_vfs, p_vnode, O_RDONLY | O_LARGEFILE)))
         {
                 printf("Unable to close the file '%s', error %i\n", psz_filename, i_error);
-                libzfswrap_exit(zhd);
+                lzfw_exit(zhd);
                 return 2;
         }
 
@@ -168,10 +168,10 @@ int main(int argc, char *argv[])
         // Get file attributes
         printf("Second attempt (file closed)\nFilename(fd) = %s(%i)\n", psz_filename, fd);
 
-        if((i_error = libzfswrap_statfd(p_vfs, fd, &fstat, NULL)))
+        if((i_error = lzfw_statfd(p_vfs, fd, &fstat, NULL)))
         {
                 printf("Unable to get attributes from '%s', error: %i\n", psz_filename, i_error);
-                libzfswrap_exit(zhd);
+                lzfw_exit(zhd);
                 return 2;
         }
         printf("\tDevice: %lu\n", fstat.st_dev);
@@ -194,22 +194,22 @@ int main(int argc, char *argv[])
         creden_t cred = { .uid = 0, .gid = 0};
         vnode_t *p_vnode;
         inogen_t root;
-        libzfswrap_getroot(p_vfs, &root);
+        lzfw_getroot(p_vfs, &root);
 
-        if((i_error = libzfswrap_opendir(p_vfs, &cred, root, &p_vnode)))
+        if((i_error = lzfw_opendir(p_vfs, &cred, root, &p_vnode)))
         {
                 printf("Unable to open the root directory: %i\n", i_error);
-                libzfswrap_exit(zhd);
+                lzfw_exit(zhd);
                 return 2;
         }
-        libzfswrap_entry_t *entries = calloc(10, sizeof(libzfswrap_entry_t));
+        lzfw_entry_t *entries = calloc(10, sizeof(lzfw_entry_t));
         off_t cookie = 0;
         int index = 0;
 
-        if((i_error = libzfswrap_readdir(p_vfs, &cred, p_vnode, entries, 10, &cookie)))
+        if((i_error = lzfw_readdir(p_vfs, &cred, p_vnode, entries, 10, &cookie)))
         {
                 printf("Unable to read the directory: %i\n", i_error);
-                libzfswrap_exit(zhd);
+                lzfw_exit(zhd);
                 return 2;
         }
 
@@ -223,10 +223,10 @@ int main(int argc, char *argv[])
                         printf("\t<entry %i (%"PRIu64")>%s</entry>\n", index++,
                                entries[i].object.inode, entries[i].psz_filename);
                 }
-                if((i_error = libzfswrap_readdir(p_vfs, &cred, p_vnode, entries, 10, &cookie)))
+                if((i_error = lzfw_readdir(p_vfs, &cred, p_vnode, entries, 10, &cookie)))
                 {
                         printf("Unable to read the directory: %i\n", i_error);
-                        libzfswrap_exit(zhd);
+                        lzfw_exit(zhd);
                         return 2;
                 }
         }
@@ -245,40 +245,40 @@ int main(int argc, char *argv[])
         else
                 printf("the .zfs directory does not exist\n");
 
-//        libzfswrap_snapshot(zhd, "tank");
+//        lzfw_snapshot(zhd, "tank");
 
 #if 0
         /* Create a directory 'test' */
-        libzfswrap_mkdir(p_vfs, 3, "test", 0123, &fd);
+        lzfw_mkdir(p_vfs, 3, "test", 0123, &fd);
         /* Create an empty file */
-        libzfswrap_create(p_vfs, 3, "empty_file", 0234, &fd);
+        lzfw_create(p_vfs, 3, "empty_file", 0234, &fd);
 
         /* Create a symlink */
-        libzfswrap_symlink(p_vfs, 3, "un_sym_link", "eth0:192.168.122.185", &fd);
+        lzfw_symlink(p_vfs, 3, "un_sym_link", "eth0:192.168.122.185", &fd);
 
         /* Read it */
         char psz_content[256];
-        libzfswrap_readlink(p_vfs, fd, psz_content, 256);
+        lzfw_readlink(p_vfs, fd, psz_content, 256);
         printf("'un_sym_link' => '%s'\n", psz_content);
 
 
         /* Destroy the directory called 'dossier' */
-        libzfswrap_rmdir(p_vfs, 3, "dossier");
+        lzfw_rmdir(p_vfs, 3, "dossier");
 
         int fd;
         char psz_file[10];
         for(int i = 0; i < atoi(argv[2]); i++)
         {
                 sprintf(psz_file, "%u", i);
-                libzfswrap_create(p_vfs, 3, psz_file, 0644, &fd);
-                libzfswrap_unlink(p_vfs, 3, psz_file);
+                lzfw_create(p_vfs, 3, psz_file, 0644, &fd);
+                lzfw_unlink(p_vfs, 3, psz_file);
         }
 
         inogen_t fd;
         inogen_t root = {.inode=3, .generation=0};
-        libzfswrap_create(p_vfs, root, "empty_file", 0234, &fd);
+        lzfw_create(p_vfs, root, "empty_file", 0234, &fd);
 #endif
-        libzfswrap_umount(p_vfs, 1);
-        libzfswrap_exit(zhd);
+        lzfw_umount(p_vfs, 1);
+        lzfw_exit(zhd);
 	return 0;
 }
