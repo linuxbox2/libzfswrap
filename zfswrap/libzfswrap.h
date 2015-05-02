@@ -250,7 +250,7 @@ int lzfw_statfs(lzfw_vfs_t *p_vfs, struct statvfs *p_stats);
 int lzfw_lookup(lzfw_vfs_t *p_vfs, creden_t *p_cred, inogen_t parent, const char *psz_name, inogen_t *p_object, int *p_type);
 
 /**
- * XXXX Lookup name relative to an open directory vnode
+ * Lookup name relative to an open directory vnode
  * @param p_vfs: the virtual file system
  * @param p_cred: the credentials of the user
  * @param parent: the parent file object
@@ -297,16 +297,18 @@ int lzfw_create(lzfw_vfs_t *p_vfs, creden_t *p_cred, inogen_t parent, const char
 int lzfw_open(lzfw_vfs_t *p_vfs, creden_t *p_cred, inogen_t object, int i_flags, lzfw_vnode_t **pp_vnode);
 
 /**
- * XXXX Open an object relative to an open directory vnode
+ * Open an object relative to an open directory vnode
  * @param p_vfs: the virtual file system
  * @param p_cred: the credentials of the user
  * @param parent: the parent vnode
  * @param psz_name: file name
  * @param i_flags: the opening flags
+ * @param mode: desired mode, if i_flags & O_CREAT
  * @param pp_vnode: the virtual node
  * @return 0 in case of success, the error code overwise
  */
-int lzfw_openat(lzfw_vfs_t *p_vfs, creden_t *p_cred, lzfw_vnode_t *parent, const char *psz_name, int i_flags, lzfw_vnode_t **pp_vnode);
+int lzfw_openat(lzfw_vfs_t *p_vfs, creden_t *p_cred, lzfw_vnode_t *parent, const char *psz_name, int i_flags, mode_t mode,
+		lzfw_vnode_t **pp_vnode);
 
 /**
  * Close the given vnode
@@ -465,6 +467,18 @@ int lzfw_closedir(lzfw_vfs_t *p_vfs, creden_t *p_cred, lzfw_vnode_t *p_vnode);
 int lzfw_mkdir(lzfw_vfs_t *p_vfs, creden_t *p_cred, inogen_t parent, const char *psz_name, mode_t mode, inogen_t *p_directory);
 
 /**
+ * Create directory at vnode
+ * @param p_vfs: the virtual file system
+ * @param p_cred: the credentials of the user
+ * @param parent: the parent directory
+ * @param psz_name: the name of the directory
+ * @param mode: the mode for the directory
+ * @param p_directory: return the new directory
+ * @return 0 on success, the error code overwise
+ */
+int lzfw_mkdirat(lzfw_vfs_t *p_vfs, creden_t *p_cred, lzfw_vnode_t *parent, const char *psz_name, mode_t mode, inogen_t *p_directory);
+
+/**
  * Remove the given directory
  * @param p_vfs: the virtual filesystem
  * @param p_cred: the credentials of the user
@@ -519,16 +533,27 @@ int lzfw_link(lzfw_vfs_t *p_vfs, creden_t *p_cred, inogen_t parent, inogen_t tar
 int lzfw_unlink(lzfw_vfs_t *p_vfs, creden_t *p_cred, inogen_t parent, const char *psz_filename);
 
 /**
- * Rename the given file
+ * Unlink the given file w/parent vnode
+ * @param p_vfs: the virtual filesystem
+ * @param p_cred: the credentials of the user
+ * @param parent: the parent directory
+ * @param psz_filename: name of the file to unlink
+ * @param flags: flags
+ * @return 0 on success, the error code overwise
+ */
+int lzfw_unlinkat(lzfw_vfs_t *p_vfs, creden_t *p_cred, lzfw_vnode_t* parent, const char *psz_filename, int flags);
+
+/**
+ * Move name from parent (directory) to new_parent (directory)
  * @param p_vfs: the virtual filesystem
  * @param p_cred: the credentials of the user
  * @param parent: the current parent directory
- * @param psz_filename: current name of the file
+ * @param psz_name: current name of the file
  * @param new_parent: the new parents directory
- * @param psz_new_filename: new file name
+ * @param psz_newname: new file name
  * @return 0 on success, the error code overwise
  */
-int lzfw_rename(lzfw_vfs_t *p_vfs, creden_t *p_cred, inogen_t parent, const char *psz_filename, inogen_t new_parent, const char *psz_new_filename);
+int lzfw_renameat(lzfw_vfs_t *p_vfs, creden_t *p_cred, lzfw_vnode_t *parent, const char *psz_name, lzfw_vnode_t *new_parent, const char *psz_newname);
 
 /**
  * Set the size of the given file

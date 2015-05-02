@@ -974,12 +974,12 @@ int lzfw_lookup(lzfw_vfs_t *p_vfs, creden_t *p_cred, inogen_t parent, const char
 }
 
 /**
- * XXXX Lookup name relative to an open directory vnode
+ * Lookup name relative to an open directory vnode
  * @param p_vfs: the virtual file system
  * @param p_cred: the credentials of the user
  * @param parent: the parent file object
  * @param psz_name: filename
- * @param p_object: return the object node and generation (XXX shouldn't this be a vnode?)
+ * @param p_object: return the object node and generation
  * @param p_type: return the object type
  * @return 0 in case of success, the error code overwise
  */
@@ -987,6 +987,28 @@ int lzfw_lookupnameat(lzfw_vfs_t *p_vfs, creden_t *p_cred,
 			    lzfw_vnode_t *parent, const char *psz_name,
 			    inogen_t *p_object, int *p_type)
 {
+  zfsvfs_t *p_zfsvfs = ((vfs_t*)p_vfs)->vfs_data;
+  int i_error;
+
+  vnode_t *p_parent_vnode = (vnode_t*) parent;
+  vnode_t *p_vnode = NULL;
+
+  ZFS_ENTER(p_zfsvfs);
+
+  i_error = VOP_LOOKUP(p_parent_vnode, (char*)psz_name, &p_vnode,
+		       NULL, 0, NULL, (cred_t*)p_cred, NULL, NULL,
+		       NULL);
+  if (i_error) {
+    ZFS_EXIT(p_zfsvfs);
+    return i_error;
+  }
+
+  p_object->inode = VTOZ(p_vnode)->z_id;
+  p_object->generation = VTOZ(p_vnode)->z_phys->zp_gen;
+  *p_type = VTTOIF(p_vnode->v_type);
+
+  VN_RELE(p_vnode);
+  ZFS_EXIT(p_zfsvfs);
 
   return 0;
 }
@@ -1091,19 +1113,67 @@ int lzfw_open(lzfw_vfs_t *p_vfs, creden_t *p_cred, inogen_t object, int i_flags,
 }
 
 /**
- * XXXX Open an object relative to an open directory vnode
+ * Open an object relative to an open directory vnode
  * @param p_vfs: the virtual file system
  * @param p_cred: the credentials of the user
  * @param parent: the parent vnode
  * @param psz_name: file name
  * @param i_flags: the opening flags
+ * @param mode: desired mode, if i_flags & O_CREAT
  * @param pp_vnode: the virtual node
  * @return 0 in case of success, the error code overwise
  */
 int lzfw_openat(lzfw_vfs_t *p_vfs, creden_t *p_cred,
-		      lzfw_vnode_t *parent, const char *psz_name, int i_flags,
-		      lzfw_vnode_t **pp_vnode)
+		lzfw_vnode_t *parent, const char *psz_name,
+		int i_flags, mode_t mode, lzfw_vnode_t **pp_vnode)
 {
+  zfsvfs_t *p_zfsvfs = ((vfs_t*)p_vfs)->vfs_data;
+  int i_mode = 0, flags = 0, i_error;
+  lzwu_flags2zfs(i_flags, &flags, &i_mode);
+
+  vnode_t *p_parent_vnode = (vnode_t*) parent;
+  vnode_t *p_vnode = NULL;
+
+  ZFS_ENTER(p_zfsvfs);
+
+  i_error = VOP_LOOKUP(p_parent_vnode, (char*)psz_name, &p_vnode,
+		       NULL, 0, NULL, (cred_t*)p_cred, NULL, NULL,
+		       NULL);
+  if (i_error) {
+    if ((i_error == ENOENT) && (i_flags & O_CREAT)) {
+      /* try VOP_CREATE */
+      vattr_t vattr = { 0 };
+      vattr.va_type = VREG;
+      vattr.va_mode = mode;
+      vattr.va_mask = AT_TYPE | AT_MODE;
+
+      i_error = VOP_CREATE(p_parent_vnode, (char*)psz_name, &vattr,
+			   NONEXCL, mode, &p_vnode, (cred_t*)p_cred,
+			   0, NULL, NULL);
+      if (i_error) {
+	ZFS_EXIT(p_zfsvfs);
+	return i_error;
+      }
+    } else {
+      ZFS_EXIT(p_zfsvfs);
+      return i_error;
+    }
+  }
+
+  vnode_t *p_old_vnode = p_vnode;
+
+  // Check errors
+  i_error = VOP_OPEN(&p_vnode, flags, (cred_t*)p_cred, NULL);
+  if (i_error) {
+    //FIXME: memleak ?
+    VN_RELE(p_vnode); // XXX added (Matt)
+    ZFS_EXIT(p_zfsvfs);
+    return i_error;
+  }
+  ASSERT(p_old_vnode == p_vnode);
+
+  ZFS_EXIT(p_zfsvfs);
+  *pp_vnode = (lzfw_vnode_t*)p_vnode;
 
   return 0;
 }
@@ -1953,6 +2023,49 @@ int lzfw_mkdir(lzfw_vfs_t *p_vfs, creden_t *p_cred, inogen_t parent, const char 
 }
 
 /**
+ * Create directory at vnode
+ * @param p_vfs: the virtual file system
+ * @param p_cred: the credentials of the user
+ * @param parent: the parent directory
+ * @param psz_name: the name of the directory
+ * @param mode: the mode for the directory
+ * @param p_directory: return the new directory
+ * @return 0 on success, the error code overwise
+ */
+int lzfw_mkdirat(lzfw_vfs_t *p_vfs, creden_t *p_cred, lzfw_vnode_t *parent, const char *psz_name, mode_t mode, inogen_t *p_directory)
+{
+        zfsvfs_t *p_zfsvfs = ((vfs_t*)p_vfs)->vfs_data;
+        int i_error;
+
+	ASSERT(parent);
+
+        ZFS_ENTER(p_zfsvfs);
+
+        vnode_t *p_parent_vnode = (vnode_t*) parent;
+        vnode_t *p_vnode = NULL;
+
+        vattr_t vattr = { 0 };
+        vattr.va_type = VDIR;
+        vattr.va_mode = mode & PERMMASK;
+        vattr.va_mask = AT_TYPE | AT_MODE;
+
+        i_error = VOP_MKDIR(p_parent_vnode, (char*)psz_name, &vattr, &p_vnode,
+			    (cred_t*)p_cred, NULL, 0, NULL);
+	if (i_error) {
+                ZFS_EXIT(p_zfsvfs);
+                return i_error;
+        }
+
+        p_directory->inode = VTOZ(p_vnode)->z_id;
+        p_directory->generation = VTOZ(p_vnode)->z_phys->zp_gen;
+
+        VN_RELE(p_vnode);
+        ZFS_EXIT(p_zfsvfs);
+
+        return 0;
+}
+
+/**
  * Remove the given directory
  * @param p_vfs: the virtual filesystem
  * @param p_cred: the credentials of the user
@@ -2212,6 +2325,33 @@ int lzfw_unlink(lzfw_vfs_t *p_vfs, creden_t *p_cred, inogen_t parent, const char
 }
 
 /**
+ * Unlink the given file w/parent vnode
+ * @param p_vfs: the virtual filesystem
+ * @param p_cred: the credentials of the user
+ * @param parent: the parent directory
+ * @param psz_filename: name of the file to unlink
+ * @param flags: flags
+ * @return 0 on success, the error code overwise
+ */
+int lzfw_unlinkat(lzfw_vfs_t *p_vfs, creden_t *p_cred, lzfw_vnode_t* parent, const char *psz_filename, int flags)
+{
+  zfsvfs_t *p_zfsvfs = ((vfs_t*)p_vfs)->vfs_data;
+  vnode_t *p_parent_vnode = (vnode_t*) parent;
+  int i_error;
+
+  ASSERT(parent);
+
+  ZFS_ENTER(p_zfsvfs);
+
+  i_error = VOP_REMOVE(p_parent_vnode, (char*)psz_filename,
+		       (cred_t*)p_cred, NULL, 0);
+
+  ZFS_EXIT(p_zfsvfs);
+
+  return i_error;
+}
+
+/**
  * Rename the given file
  * @param p_vfs: the virtual filesystem
  * @param p_cred: the credentials of the user
@@ -2272,6 +2412,38 @@ int lzfw_rename(lzfw_vfs_t *p_vfs, creden_t *p_cred, inogen_t parent, const char
         ZFS_EXIT(p_zfsvfs);
 
         return i_error;
+}
+
+/**
+ * Move name from parent (directory) to new_parent (directory)
+ * @param p_vfs: the virtual filesystem
+ * @param p_cred: the credentials of the user
+ * @param parent: the current parent directory
+ * @param psz_name: current name of the file
+ * @param new_parent: the new parents directory
+ * @param psz_newname: new file name
+ * @return 0 on success, the error code overwise
+ */
+int lzfw_renameat(lzfw_vfs_t *p_vfs, creden_t *p_cred, lzfw_vnode_t *parent, const char *psz_name, lzfw_vnode_t *new_parent, const char *psz_newname)
+{
+  zfsvfs_t *p_zfsvfs = ((vfs_t*)p_vfs)->vfs_data;
+  int i_error;
+
+  ZFS_ENTER(p_zfsvfs);
+
+  ASSERT(parent);
+  ASSERT(new_parent);
+
+  vnode_t *p_parent_vnode = (vnode_t*) parent;
+  vnode_t *p_new_parent_vnode = (vnode_t*) new_parent;
+
+  i_error = VOP_RENAME(p_parent_vnode, (char*)psz_name,
+		       p_new_parent_vnode, (char*)psz_newname,
+		       (cred_t*)p_cred, NULL, 0);
+
+  ZFS_EXIT(p_zfsvfs);
+
+  return i_error;
 }
 
 /**
