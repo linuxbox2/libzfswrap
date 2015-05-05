@@ -1150,7 +1150,8 @@ int lzfw_openat(lzfw_vfs_t *p_vfs, creden_t *p_cred,
       vattr.va_mask = AT_TYPE | AT_MODE;
 
       i_error = VOP_CREATE(p_parent_vnode, (char*)psz_name, &vattr,
-			   NONEXCL, mode, &p_vnode, (cred_t*)p_cred,
+			   (i_flags & O_EXCL) ? EXCL : NONEXCL,
+			   mode, &p_vnode, (cred_t*)p_cred,
 			   0, NULL, NULL);
       if (i_error) {
 	ZFS_EXIT(p_zfsvfs);
@@ -1160,6 +1161,10 @@ int lzfw_openat(lzfw_vfs_t *p_vfs, creden_t *p_cred,
     } else {
       ZFS_EXIT(p_zfsvfs);
       return i_error;
+    }
+  } else {
+    if (i_flags & O_EXCL) {
+      return EEXIST;
     }
   }
 
