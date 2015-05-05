@@ -1571,7 +1571,7 @@ int lzfw_setattr(lzfw_vfs_t *p_vfs, creden_t *p_cred, inogen_t object, struct st
  * @param object: the object
  * @param
  */
-int xattr_helper(zfsvfs_t *p_zfsvfs, creden_t *p_cred, inogen_t object, vnode_t **pp_vnode)
+static int xattr_helper(zfsvfs_t *p_zfsvfs, creden_t *p_cred, inogen_t object, vnode_t **pp_vnode)
 {
         znode_t *p_znode;
         int i_error;
