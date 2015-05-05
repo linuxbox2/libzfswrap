@@ -1120,12 +1120,14 @@ int lzfw_open(lzfw_vfs_t *p_vfs, creden_t *p_cred, inogen_t object, int i_flags,
  * @param psz_name: file name
  * @param i_flags: the opening flags
  * @param mode: desired mode, if i_flags & O_CREAT
+ * @param o_flags: result flags
  * @param pp_vnode: the virtual node
  * @return 0 in case of success, the error code overwise
  */
 int lzfw_openat(lzfw_vfs_t *p_vfs, creden_t *p_cred,
 		lzfw_vnode_t *parent, const char *psz_name,
-		int i_flags, mode_t mode, lzfw_vnode_t **pp_vnode)
+		unsigned int i_flags, mode_t mode,
+		unsigned int *o_flags, lzfw_vnode_t **pp_vnode)
 {
   zfsvfs_t *p_zfsvfs = ((vfs_t*)p_vfs)->vfs_data;
   int i_mode = 0, flags = 0, i_error;
@@ -1154,6 +1156,7 @@ int lzfw_openat(lzfw_vfs_t *p_vfs, creden_t *p_cred,
 	ZFS_EXIT(p_zfsvfs);
 	return i_error;
       }
+      *o_flags |= LZFW_OFLAG_OPEN_CREATED;
     } else {
       ZFS_EXIT(p_zfsvfs);
       return i_error;

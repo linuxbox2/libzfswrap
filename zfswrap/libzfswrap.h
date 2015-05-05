@@ -54,6 +54,11 @@ typedef struct lzfw_vnode_t lzfw_vnode_t;
 /** Modification time */
 #define LZFSW_ATTR_MTIME        (1 << 4)
 
+/** Op Result Flags (some ops) */
+#define LZFW_OFLAG_NONE  0x0000
+
+#define LZFW_OFLAG_OPEN_CREATED  0x0001
+
 /**
  * Initialize the libzfswrap library
  * @return a handle to the library, NULL in case of error
@@ -304,11 +309,12 @@ int lzfw_open(lzfw_vfs_t *p_vfs, creden_t *p_cred, inogen_t object, int i_flags,
  * @param psz_name: file name
  * @param i_flags: the opening flags
  * @param mode: desired mode, if i_flags & O_CREAT
+ * @param o_flags: result flags
  * @param pp_vnode: the virtual node
  * @return 0 in case of success, the error code overwise
  */
-int lzfw_openat(lzfw_vfs_t *p_vfs, creden_t *p_cred, lzfw_vnode_t *parent, const char *psz_name, int i_flags, mode_t mode,
-		lzfw_vnode_t **pp_vnode);
+int lzfw_openat(lzfw_vfs_t *p_vfs, creden_t *p_cred, lzfw_vnode_t *parent, const char *psz_name, unsigned int i_flags, mode_t mode,
+		unsigned int *o_flags, lzfw_vnode_t **pp_vnode);
 
 /**
  * Close the given vnode
