@@ -1766,6 +1766,81 @@ int lzfw_setxattr(lzfw_vfs_t *p_vfs, creden_t *p_cred, inogen_t object, const ch
 }
 
 /**
+ * Add the given (key,value) to the extended attributes.
+ * This function will change the value if the key already exists.
+ * @param p_vfs: the virtual file system
+ * @param p_cred: the credentials of the user
+ * @param object: the object
+ * @param psz_key: the key
+ * @param psz_value: the value
+ * @return 0 in case of success, the error code overwise
+ */
+int lzfw_setxattrat(lzfw_vfs_t *p_vfs, creden_t *p_cred, lzfw_vnode_t *object, const char *psz_key, const char *psz_value)
+{
+        zfsvfs_t *p_zfsvfs = ((vfs_t*)p_vfs)->vfs_data;
+	vnode_t *p_vnode = (vnode_t*) object;
+        vnode_t *xattr_vnode;
+        int i_error;
+
+        ZFS_ENTER(p_zfsvfs);
+
+	/* lookup xattr directory */
+        i_error = VOP_LOOKUP(p_vnode, "", &xattr_vnode, NULL,
+                             LOOKUP_XATTR | CREATE_XATTR_DIR, NULL,
+                             (cred_t*)p_cred, NULL, NULL, NULL);
+	if (i_error) {
+		ZFS_EXIT(p_zfsvfs);
+		return i_error;
+	}
+
+        // Create a new pseudo-file
+        vattr_t vattr = { 0 };
+        vattr.va_type = VREG;
+        vattr.va_mode = 0660;
+        vattr.va_mask = AT_TYPE | AT_MODE | AT_SIZE;
+        vattr.va_size = 0;
+
+        vnode_t *pseudo_vnode;
+	i_error = VOP_CREATE(xattr_vnode, (char*)psz_key, &vattr, NONEXCL,
+			     VWRITE, &pseudo_vnode, (cred_t*)p_cred, 0,
+			     NULL, NULL);
+	if (i_error) {
+                VN_RELE(xattr_vnode);
+                ZFS_EXIT(p_zfsvfs);
+        }
+        VN_RELE(xattr_vnode);
+
+        // Open the pseudo-file
+	i_error = VOP_OPEN(&pseudo_vnode, FWRITE, (cred_t*)p_cred, NULL);
+	if (i_error) {
+		VN_RELE(pseudo_vnode); // rele ref taken in VOP_CREATE
+                ZFS_EXIT(p_zfsvfs);
+                return i_error;
+        }
+
+        iovec_t iovec;
+        uio_t uio;
+        uio.uio_iov = &iovec;
+        uio.uio_iovcnt = 1;
+        uio.uio_segflg = UIO_SYSSPACE;
+        uio.uio_fmode = 0;
+        uio.uio_llimit = RLIM64_INFINITY;
+
+        iovec.iov_base = (void *) psz_value;
+        iovec.iov_len = strlen(psz_value);
+        uio.uio_resid = iovec.iov_len;
+        uio.uio_loffset = 0;
+
+        i_error = VOP_WRITE(pseudo_vnode, &uio, FWRITE, (cred_t*)p_cred, NULL);
+        VOP_CLOSE(pseudo_vnode, FWRITE, 1, (offset_t) 0, (cred_t*)p_cred, NULL);
+	VN_RELE(pseudo_vnode); // rele rev taken in VOP_CREATE
+
+        ZFS_EXIT(p_zfsvfs);
+
+        return i_error;
+}
+
+/**
  * Get the value for the given extended attribute
  * @param p_vfs: the virtual file system
  * @param p_cred: the user credentials

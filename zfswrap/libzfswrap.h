@@ -386,6 +386,18 @@ int lzfw_getattr(lzfw_vfs_t *p_vfs, creden_t *p_cred, inogen_t object, struct st
 int lzfw_setattr(lzfw_vfs_t *p_vfs, creden_t *p_cred, inogen_t object, struct stat *p_stat, int flags, struct stat *p_new_stat);
 
 /**
+ * Add the given (key,value) to the extended attributes.
+ * This function will change the value if the key already exists.
+ * @param p_vfs: the virtual file system
+ * @param p_cred: the credentials of the user
+ * @param object: the object
+ * @param psz_key: the key
+ * @param psz_value: the value
+ * @return 0 in case of success, the error code overwise
+ */
+int lzfw_setxattrat(lzfw_vfs_t *p_vfs, creden_t *p_cred, lzfw_vnode_t *object, const char *psz_key, const char *psz_value);
+
+/**
  * List the extended attributes
  * @param p_vfs: the virtual file system
  * @param p_cred: the credentials of the user
