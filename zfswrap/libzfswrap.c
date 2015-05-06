@@ -1921,6 +1921,94 @@ int lzfw_getxattr(lzfw_vfs_t *p_vfs, creden_t *p_cred, inogen_t object, const ch
 }
 
 /**
+ * Get the value for the given extended attribute.  As in Linux xattrs,
+ * if value is NULL, then the stored size of the attribute identified by
+ * psz_key (if any) is placed in size.
+ *
+ * @param p_vfs: the virtual file system
+ * @param p_cred: the user credentials
+ * @param object: the object
+ * @param psz_key: the key
+ * @param value: buffer to receive value
+ * @param size: on entry, max size of value; on exit, bytes written into value
+ * @return 0 in case of success, the error code overwise
+ */
+int lzfw_getxattrat(lzfw_vfs_t *p_vfs, creden_t *p_cred, lzfw_vnode_t *object,
+		    const char *psz_key, char *value, size_t *size)
+{
+  zfsvfs_t *p_zfsvfs = ((vfs_t*)p_vfs)->vfs_data;
+  vnode_t *p_vnode = (vnode_t*) object;
+  vnode_t *xattr_vnode;
+  int i_error;
+
+  iovec_t iovec;
+  uio_t uio;
+  uio.uio_iov = &iovec;
+  uio.uio_iovcnt = 1;
+  uio.uio_segflg = UIO_SYSSPACE;
+  uio.uio_fmode = 0;
+  uio.uio_llimit = RLIM64_INFINITY;
+  iovec.iov_base = value;
+  iovec.iov_len = *size;
+  uio.uio_resid = iovec.iov_len;
+  uio.uio_loffset = 0;
+
+  ZFS_ENTER(p_zfsvfs);
+
+  /* lookup xattr directory */
+  i_error = VOP_LOOKUP(p_vnode, "", &xattr_vnode, NULL,
+		       LOOKUP_XATTR | CREATE_XATTR_DIR, NULL,
+		       (cred_t*)p_cred, NULL, NULL, NULL);
+  if (i_error) {
+    ZFS_EXIT(p_zfsvfs);
+    return i_error;
+  }
+
+  // lookup pseudo-file
+  vnode_t *pseudo_vnode;
+  i_error = VOP_LOOKUP(xattr_vnode, (char*)psz_key, &pseudo_vnode, NULL, 0,
+		       NULL, (cred_t*)p_cred, NULL, NULL, NULL);
+  if (i_error) {
+    VN_RELE(xattr_vnode);
+    ZFS_EXIT(p_zfsvfs);
+    return i_error;
+  }
+
+  VN_RELE(xattr_vnode); // done with this
+
+  /* special: return the stored size of xattr */
+  if (*size == 0) {
+    vattr_t vattr = { 0 };
+    vattr.va_mask = AT_STAT | AT_NBLOCKS | AT_BLKSIZE | AT_SIZE;
+    i_error = VOP_GETATTR(pseudo_vnode, &vattr, 0, (cred_t*)p_cred, NULL);
+    if (!i_error)
+      *size = vattr.va_size;
+    goto out;
+  }
+
+  // open xattr file
+  i_error = VOP_OPEN(&pseudo_vnode, FREAD, (cred_t*)p_cred, NULL);
+  if (i_error) {
+    VN_RELE(pseudo_vnode);
+    ZFS_EXIT(p_zfsvfs);
+    return i_error;
+  }
+  
+  i_error = VOP_READ(pseudo_vnode, &uio, 0, (cred_t*)p_cred, NULL);
+  if (i_error)
+    *size = 0;
+  else
+    *size = iovec.iov_len; // XXX check
+  (void) VOP_CLOSE(pseudo_vnode, FREAD, 1, (offset_t)0, (cred_t*)p_cred, NULL);
+
+ out:
+  VN_RELE(pseudo_vnode);
+  ZFS_EXIT(p_zfsvfs);
+
+  return i_error;
+}
+
+/**
  * Remove the given extended attribute
  * @param p_vfs: the virtual file system
  * @param p_cred: the user credentials

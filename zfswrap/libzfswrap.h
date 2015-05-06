@@ -374,6 +374,22 @@ int lzfw_stat(lzfw_vfs_t *p_vfs, creden_t *p_cred, lzfw_vnode_t *p_vnode, struct
 int lzfw_getattr(lzfw_vfs_t *p_vfs, creden_t *p_cred, inogen_t object, struct stat *p_stat, int *p_type);
 
 /**
+ * Get the value for the given extended attribute.  As in Linux xattrs,
+ * if value is NULL, then the stored size of the attribute identified by
+ * psz_key (if any) is placed in size.
+ *
+ * @param p_vfs: the virtual file system
+ * @param p_cred: the user credentials
+ * @param object: the object
+ * @param psz_key: the key
+ * @param value: buffer to receive value
+ * @param size: on entry, max size of value; on exit, bytes written into value
+ * @return 0 in case of success, the error code overwise
+ */
+int lzfw_getxattrat(lzfw_vfs_t *p_vfs, creden_t *p_cred, lzfw_vnode_t *object,
+		    const char *psz_key, char *value, size_t *size);
+
+/**
  * Set the attributes of an object
  * @param p_vfs: the virtual filesystem
  * @param p_cred: the credentials of the user
