@@ -818,7 +818,7 @@ lzfw_vfs_t *lzfw_mount(const char *psz_zpool, const char *psz_dir, const char *p
         .spec = (char*)psz_zpool,
         .dir = (char*)psz_dir,
         .flags = 0 | MS_SYSSPACE,
-        .fstype = "zfs-ganesha",
+        .fstype = "zfs-wrap",
         .dataptr = "",
         .datalen = 0,
         .optptr = (char*)psz_options,
