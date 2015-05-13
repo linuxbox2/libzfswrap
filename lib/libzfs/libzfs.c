@@ -22,7 +22,7 @@ static void decode_namecheck(namecheck_err_t why, char c_what,
       *ppsz_error = "name is reserved";
       break;
     case NAME_ERR_DISKLIKE:
-      *ppsz_error = "pool name is reserved";
+      *ppsz_error = "reserved disk name";
       break;
     case NAME_ERR_LEADING_SLASH:
       *ppsz_error = "leading slash in name";
@@ -45,7 +45,7 @@ static void decode_namecheck(namecheck_err_t why, char c_what,
  * Check if the zpool name is valid
  * @param psz_zpool: the zpool name
  * @param ppsz_error: the error message if any
- * @return 0 in case of success, 1 in case of error
+ * @return 1 in case of success, 0 otherwise
  */
 int libzfs_zpool_name_valid(const char *psz_zpool,
 			    const char **ppsz_error)
@@ -53,34 +53,43 @@ int libzfs_zpool_name_valid(const char *psz_zpool,
   namecheck_err_t why;
   char c_what;
 
-  if(pool_namecheck(psz_zpool, &why, &c_what))
-    {
-      decode_namecheck(why, c_what, ppsz_error);
-      return 1;
-    }
-  return 0;
+  if(pool_namecheck(psz_zpool, &why, &c_what)) {
+    decode_namecheck(why, c_what, ppsz_error);
+    return 0;
+  }
+  return 1;
 }
 
 /**
  * Check if the dataset name is valid
  * @param psz_zfs: the dataset name
+ * @param type: dataset type (e.g., ZFS_TYPE_FILESYSTEM)
  * @param ppsz_error: the error message if any
- * @return 0 in case of success, 1 in case of error
+ * @return 1 in case of success, 0 otherwise
  */
-int libzfs_dataset_name_valid(const char *psz_zfs,
+int libzfs_dataset_name_valid(const char *psz_zfs, int type,
 			      const char **ppsz_error)
 {
   namecheck_err_t why;
   char c_what;
 
-  if(pool_namecheck(psz_zfs, &why, &c_what))
-    {
-      decode_namecheck(why, c_what, ppsz_error);
-      return 1;
-    }
-  return 0;
-}
+  if (pool_namecheck(psz_zfs, &why, &c_what)) {
+    decode_namecheck(why, c_what, ppsz_error);
+    return 0;
+  }
 
+  if (!(type & ZFS_TYPE_SNAPSHOT) && strchr(psz_zfs, '@') != NULL) {
+    *ppsz_error = "snapshot delimiter '@' in filesystem name";
+    return 0;
+  }
+
+  if (type == ZFS_TYPE_SNAPSHOT && strchr(psz_zfs, '@') == NULL) {
+    *ppsz_error = "missing '@' delimiter in snapshot name";
+    return 0;
+  }
+
+  return 1;
+}
 
 /**
  * Create the zpool
@@ -100,8 +109,8 @@ int libzfs_zpool_create(libzfs_handle_t *p_libzfshd, const char* psz_zpool,
         char *psz_altroot;
 
         /* Check the zpool name */
-        if(libzfs_zpool_name_valid(psz_zpool, ppsz_error))
-                return EINVAL;
+        if(! libzfs_zpool_name_valid(psz_zpool, ppsz_error))
+	  return EINVAL;
 
         /** Check the properties
             TODO: zpool_valid_proplist and zfs_valid_proplist */
@@ -173,8 +182,8 @@ zpool_handle_t *libzfs_zpool_open_canfail(libzfs_handle_t *p_libzfshd, const cha
         int i_error;
 
         /* Check the zpool name */
-        if(libzfs_zpool_name_valid(psz_zpool, ppsz_error))
-                return NULL;
+        if(! libzfs_zpool_name_valid(psz_zpool, ppsz_error))
+	  return NULL;
 
         if((p_zpool = calloc(1, sizeof(zpool_handle_t))) == NULL)
         {
@@ -833,7 +842,8 @@ int libzfs_zfs_iter(libzfs_handle_t *p_libzfshd, zfs_iter_f func, void *data, co
         return 0;
 }
 
-int libzfs_zfs_validate_name(libzfs_handle_t *hdl, const char *path, int type, boolean_t modifying, const char **ppsz_error)
+int libzfs_zfs_validate_name(const char *path, int type, boolean_t modifying,
+			     const char **ppsz_error)
 {
         namecheck_err_t why;
         char what;
@@ -914,7 +924,7 @@ zfs_handle_t *libzfs_zfs_open(libzfs_handle_t *p_libzfshd, const char *psz_path,
         zfs_handle_t *p_zfs;
 
         /* Validate the name before tryin to open it */
-        if(!libzfs_zfs_validate_name(p_libzfshd, psz_path, ZFS_TYPE_DATASET, B_FALSE, ppsz_error))
+        if(!libzfs_zfs_validate_name(psz_path, ZFS_TYPE_DATASET, B_FALSE, ppsz_error))
                 return NULL;
 
         if((p_zfs = libzfs_make_dataset_handle(p_libzfshd, psz_path)) == NULL)
