@@ -735,7 +735,7 @@ int lzfw_zfs_snapshot_destroy(lzfw_handle_t *p_zhd, const char *psz_zfs, const c
         }
 
         if((i_error = dmu_snapshots_destroy(psz_zfs, psz_snapshot, B_TRUE)))
-                *ppsz_error = "Unable to destro the snapshot";
+                *ppsz_error = "Unable to destroy the snapshot";
 
         libzfs_zpool_close(p_zpool);
         return i_error;
@@ -755,9 +755,13 @@ zfs_create_cb(objset_t *os, void *arg, cred_t *cr, dmu_tx_t *tx)
 
 /**
  * Create a new dataset (filesystem).
- *
+ * @param p_zhd: the libzfswrap handle
+ * @param psz_zfs: name of the file system
+ * @param type: dataset type (e.g., ZFS_TYPE_FILESYSTEM)
+ * @param ppsz_error: the error message if any
+ * @return 0 in case of success, the error code otherwise
  */
-int lzfw_dataset_create(const char *psz_zfs, int type,
+int lzfw_dataset_create(lzfw_handle_t *p_zhd, const char *psz_zfs, int type,
 			const char **ppsz_error)
 {
   zfs_creat_t zct;
@@ -806,6 +810,24 @@ int lzfw_dataset_create(const char *psz_zfs, int type,
       (void) dmu_objset_destroy(psz_zfs, B_FALSE);
   }
   nvlist_free(nvprops);
+
+  return i_error;
+}
+
+/**
+ * Destroy dataset (filesystem).
+ * @param p_zhd: the libzfswrap handle
+ * @param psz_zfs: name of the file system
+ * @param ppsz_error: the error message if any
+ * @return 0 in case of success, the error code otherwise
+ */
+int lzfw_dataset_destroy(lzfw_handle_t *p_zhd, const char *psz_zfs,
+			 const char **ppsz_error)
+{
+  int i_error = 0;
+
+  /* XXX fail if mounted! */
+  i_error = dmu_objset_destroy(psz_zfs, B_FALSE /* defer destroy */);
 
   return i_error;
 }
