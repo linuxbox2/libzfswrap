@@ -372,4 +372,16 @@ void releasef(int fd)
 
 	kmem_free(node, sizeof(file_t));
 }
+#else
+/* XXXX */
+file_t *getf(int fd)
+{
+	abort();
+}
+
+void releasef(int fd)
+{
+	abort();
+}
+
 #endif
