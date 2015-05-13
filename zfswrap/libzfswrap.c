@@ -9,6 +9,7 @@
 #include <libzfs.h>
 #include <libzfs_impl.h>
 #include <sys/dmu_objset.h>
+#include <sys/dsl_dataset.h>
 #include <sys/zfs_znode.h>
 #include <sys/mode.h>
 #include <sys/fcntl.h>
@@ -20,6 +21,7 @@
 
 #include "libzfswrap.h"
 #include "libzfswrap_utils.h"
+
 
 extern int zfs_vfsinit(int fstype, char *name);
 
@@ -739,6 +741,74 @@ int lzfw_zfs_snapshot_destroy(lzfw_handle_t *p_zhd, const char *psz_zfs, const c
         return i_error;
 }
 
+/**
+ * Dataset support
+ */
+
+/* zfs_ioctl.c */
+static void
+zfs_create_cb(objset_t *os, void *arg, cred_t *cr, dmu_tx_t *tx)
+{
+	zfs_creat_t *zct = arg;
+	zfs_create_fs(os, cr, zct->zct_zplprops, tx); /* zfs_znode.h */
+}
+
+/**
+ * Create a new dataset (filesystem).
+ *
+ */
+int lzfw_dataset_create(const char *psz_zfs, int type,
+			const char **ppsz_error)
+{
+  zfs_creat_t zct;
+  nvlist_t *nvprops = NULL;
+  int i_error = 0;
+
+  /* Check the zpool name */
+  if (! libzfs_dataset_name_valid(psz_zfs, ppsz_error))
+    return EINVAL;
+
+  /* XXX can't create zvols, this interface not for clones */
+  assert(type == ZFS_TYPE_FILESYSTEM);
+
+  zct.zct_zplprops = NULL;
+  zct.zct_props = nvprops;
+
+  /*
+   * We have to have normalization and
+   * case-folding flags correct when we do the
+   * file system creation, so go figure them out
+   * now.
+   */
+  boolean_t is_insensitive = B_FALSE;
+  VERIFY(nvlist_alloc(&zct.zct_zplprops,
+		      NV_UNIQUE_NAME, KM_SLEEP) == 0);
+  i_error = zfs_fill_zplprops(psz_zfs, nvprops, zct.zct_zplprops,
+			      &is_insensitive);
+  if (i_error != 0) {
+    nvlist_free(nvprops);
+    nvlist_free(zct.zct_zplprops);
+    return (i_error);
+  }
+
+  i_error = dmu_objset_create(psz_zfs, type,
+			      is_insensitive ? DS_FLAG_CI_DATASET : 0,
+			      zfs_create_cb, &zct);
+  nvlist_free(zct.zct_zplprops);
+
+  /*
+   * It would be nice to do this atomically.
+   */
+  if (i_error == 0) {
+    i_error = zfs_set_prop_nvlist(psz_zfs, ZPROP_SRC_LOCAL,
+				  nvprops, NULL);
+    if (i_error != 0)
+      (void) dmu_objset_destroy(psz_zfs, B_FALSE);
+  }
+  nvlist_free(nvprops);
+
+  return i_error;
+}
 
 /**
  * List the available snapshots for the given zfs

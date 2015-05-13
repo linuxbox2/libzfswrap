@@ -2655,7 +2655,7 @@ zfs_fill_zplprops_impl(objset_t *os, uint64_t zplver,
 	return (0);
 }
 
-static int
+int
 zfs_fill_zplprops(const char *dataset, nvlist_t *createprops,
     nvlist_t *zplprops, boolean_t *is_ci)
 {
