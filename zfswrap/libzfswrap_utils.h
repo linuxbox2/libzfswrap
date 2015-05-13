@@ -43,4 +43,9 @@ void lzwu_print_spares(libzfs_handle_t *p_zhd, zpool_handle_t *zhp, nvlist_t **s
 void lzwu_print_error_log(zpool_handle_t *zhp);
 void lzwu_print_dedup_stats(nvlist_t *config);
 
+int libzfs_zpool_name_valid(const char *psz_zpool,
+			    const char **ppsz_error);
+int libzfs_dataset_name_valid(const char *psz_zfs,
+			      const char **ppsz_error);
+
 #endif //LIBZFSWRAP_UTIL_H

@@ -3,56 +3,84 @@
 #include <sys/spa.h>
 #include <sys/dmu_objset.h>
 
+
+static void decode_namecheck(namecheck_err_t why, char c_what,
+			     const char **ppsz_error)
+{
+  switch(why)
+    {
+    case NAME_ERR_TOOLONG:
+      *ppsz_error = "name is too long";
+      break;
+    case NAME_ERR_INVALCHAR:
+      *ppsz_error = "invalid character in pool name";
+      break;
+    case NAME_ERR_NOLETTER:
+      *ppsz_error = "name must begin with a letter";
+      break;
+    case NAME_ERR_RESERVED:
+      *ppsz_error = "name is reserved";
+      break;
+    case NAME_ERR_DISKLIKE:
+      *ppsz_error = "pool name is reserved";
+      break;
+    case NAME_ERR_LEADING_SLASH:
+      *ppsz_error = "leading slash in name";
+      break;
+    case NAME_ERR_EMPTY_COMPONENT:
+      *ppsz_error = "empty component in name";
+      break;
+    case NAME_ERR_TRAILING_SLASH:
+      *ppsz_error = "trailing slash in name";
+      break;
+    case NAME_ERR_MULTIPLE_AT:
+      *ppsz_error = "multiple '@' delimiters in name";
+      break;
+    default:
+      *ppsz_error = "zpool name invalid";
+    }
+}
+
 /**
  * Check if the zpool name is valid
  * @param psz_zpool: the zpool name
  * @param ppsz_error: the error message if any
  * @return 0 in case of success, 1 in case of error
  */
-static int libzfs_zpool_name_valid(const char *psz_zpool, const char **ppsz_error)
+int libzfs_zpool_name_valid(const char *psz_zpool,
+			    const char **ppsz_error)
 {
-        namecheck_err_t why;
-        char c_what;
-        int i_error;
+  namecheck_err_t why;
+  char c_what;
 
-        if(pool_namecheck(psz_zpool, &why, &c_what))
-        {
-                switch(why)
-                {
-                case NAME_ERR_TOOLONG:
-                        *ppsz_error = "name is too long";
-                        break;
-                case NAME_ERR_INVALCHAR:
-                        *ppsz_error = "invalid character in pool name";
-                        break;
-                case NAME_ERR_NOLETTER:
-                        *ppsz_error = "name must begin with a letter";
-                        break;
-                case NAME_ERR_RESERVED:
-                        *ppsz_error = "name is reserved";
-                        break;
-                case NAME_ERR_DISKLIKE:
-                        *ppsz_error = "pool name is reserved";
-                        break;
-                case NAME_ERR_LEADING_SLASH:
-                        *ppsz_error = "leading slash in name";
-                        break;
-                case NAME_ERR_EMPTY_COMPONENT:
-                        *ppsz_error = "empty component in name";
-                        break;
-                case NAME_ERR_TRAILING_SLASH:
-                        *ppsz_error = "trailing slash in name";
-                        break;
-                case NAME_ERR_MULTIPLE_AT:
-                        *ppsz_error = "multiple '@' delimiters in name";
-                        break;
-                default:
-                        *ppsz_error = "zpool name invalid";
-                }
-                return 1;
-        }
-        return 0;
+  if(pool_namecheck(psz_zpool, &why, &c_what))
+    {
+      decode_namecheck(why, c_what, ppsz_error);
+      return 1;
+    }
+  return 0;
 }
+
+/**
+ * Check if the dataset name is valid
+ * @param psz_zfs: the dataset name
+ * @param ppsz_error: the error message if any
+ * @return 0 in case of success, 1 in case of error
+ */
+int libzfs_dataset_name_valid(const char *psz_zfs,
+			      const char **ppsz_error)
+{
+  namecheck_err_t why;
+  char c_what;
+
+  if(pool_namecheck(psz_zfs, &why, &c_what))
+    {
+      decode_namecheck(why, c_what, ppsz_error);
+      return 1;
+    }
+  return 0;
+}
+
 
 /**
  * Create the zpool
