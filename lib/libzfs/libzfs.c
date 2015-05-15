@@ -13,7 +13,7 @@ static void decode_namecheck(namecheck_err_t why, char c_what,
       *ppsz_error = "name is too long";
       break;
     case NAME_ERR_INVALCHAR:
-      *ppsz_error = "invalid character in pool name";
+      *ppsz_error = "invalid character in name";
       break;
     case NAME_ERR_NOLETTER:
       *ppsz_error = "name must begin with a letter";
@@ -73,7 +73,7 @@ int libzfs_dataset_name_valid(const char *psz_zfs, int type,
   namecheck_err_t why;
   char c_what;
 
-  if (pool_namecheck(psz_zfs, &why, &c_what)) {
+  if (dataset_namecheck(psz_zfs, &why, &c_what)) {
     decode_namecheck(why, c_what, ppsz_error);
     return 0;
   }
