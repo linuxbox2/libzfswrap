@@ -209,6 +209,25 @@ int lzfw_zfs_snapshot(lzfw_handle_t *p_zhd, const char *psz_zfs, const char *psz
 int lzfw_zfs_snapshot_destroy(lzfw_handle_t *p_zhd, const char *psz_zfs, const char *psz_snapshot, const char **ppsz_error);
 
 /**
+ * Create a new dataset (filesystem).
+ * @param p_zhd: the libzfswrap handle
+ * @param psz_zfs: name of the file system
+ * @param type: dataset type (e.g., ZFS_TYPE_FILESYSTEM)
+ * @param ppsz_error: the error message if any
+ * @return 0 in case of success, the error code otherwise
+ */
+int lzfw_dataset_create(lzfw_handle_t *p_zhd, const char *psz_zfs, int type, const char **ppsz_error);
+
+/**
+ * Destroy dataset (filesystem).
+ * @param p_zhd: the libzfswrap handle
+ * @param psz_zfs: name of the file system
+ * @param ppsz_error: the error message if any
+ * @return 0 in case of success, the error code otherwise
+ */
+int lzfw_dataset_destroy(lzfw_handle_t *p_zhd, const char *psz_zfs, const char **ppsz_error);
+
+/**
  * Mount the given file system
  * @param psz_zpool: the pool to mount
  * @param psz_dir: the directory to mount
