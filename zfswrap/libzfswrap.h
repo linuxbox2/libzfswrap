@@ -360,6 +360,21 @@ int lzfw_close(lzfw_vfs_t *p_vfs, creden_t *p_cred, lzfw_vnode_t *p_vnode, int i
 int lzfw_read(lzfw_vfs_t *p_vfs, creden_t *p_cred, lzfw_vnode_t *p_vnode, void *p_buffer, size_t size, int behind, off_t offset);
 
 /**
+ * Vectorwise read from file
+ * @param p_vfs: the virtual file system
+ * @param cred: the credentials of the user
+ * @param vnode: the vnode
+ * @param iov: array of iovec buffers to read into
+ * @param iovcnt: the length of the iov array
+ * @param offset: the logical file offset
+ * @return bytes read if successful, -error code overwise (?)
+ */
+ssize_t lzfw_preadv(lzfw_vfs_t *p_vfs, creden_t *cred,
+		    lzfw_vnode_t *vnode,
+		    struct iovec *iov, int iovcnt,
+		    off_t offset);
+
+/**
  * Write some data to the given file
  * @param p_vfs: the virtual file system
  * @param p_cred: the credentials of the user
