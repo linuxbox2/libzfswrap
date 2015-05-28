@@ -357,7 +357,7 @@ int lzfw_close(lzfw_vfs_t *p_vfs, creden_t *p_cred, lzfw_vnode_t *p_vnode, int i
  * @param offset: the offset to read
  * @return 0 in case of success, the error code overwise
  */
-int lzfw_read(lzfw_vfs_t *p_vfs, creden_t *p_cred, lzfw_vnode_t *p_vnode, void *p_buffer, size_t size, int behind, off_t offset);
+ssize_t lzfw_read(lzfw_vfs_t *p_vfs, creden_t *p_cred, lzfw_vnode_t *p_vnode, void *p_buffer, size_t size, int behind, off_t offset);
 
 /**
  * Vectorwise read from file

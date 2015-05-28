@@ -2137,9 +2137,9 @@ int lzfw_removexattr(lzfw_vfs_t *p_vfs, creden_t *p_cred, inogen_t object, const
  * @param size: the size of the buffer
  * @param behind: do we have to read behind the file ?
  * @param offset: the offset to read
- * @return 0 in case of success, the error code overwise
+ * @return bytes read if successful, -error code overwise (?)
  */
-int lzfw_read(lzfw_vfs_t *p_vfs, creden_t *p_cred, lzfw_vnode_t *p_vnode, void *p_buffer, size_t size, int behind, off_t offset)
+ssize_t lzfw_read(lzfw_vfs_t *p_vfs, creden_t *p_cred, lzfw_vnode_t *p_vnode, void *p_buffer, size_t size, int behind, off_t offset)
 {
         zfsvfs_t *p_zfsvfs = ((vfs_t*)p_vfs)->vfs_data;
         iovec_t iovec;
@@ -2158,9 +2158,10 @@ int lzfw_read(lzfw_vfs_t *p_vfs, creden_t *p_cred, lzfw_vnode_t *p_vnode, void *
                 uio.uio_loffset += VTOZ((vnode_t*)p_vnode)->z_phys->zp_size;
 
         ZFS_ENTER(p_zfsvfs);
-        int error = VOP_READ((vnode_t*)p_vnode, &uio, 0, (cred_t*)p_cred, NULL);
+        ssize_t error = VOP_READ((vnode_t*)p_vnode, &uio, 0, (cred_t*)p_cred, NULL);
         ZFS_EXIT(p_zfsvfs);
 
+	/* XXXX return from VOP_READ is always discarded? */
         if(offset == uio.uio_loffset)
                 return 0;
         else
