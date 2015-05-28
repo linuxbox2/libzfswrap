@@ -4,6 +4,7 @@
 #include <stdint.h>
 #include <sys/stat.h>
 #include <sys/statvfs.h>
+#include <sys/uio.h>
 
 /** Reprensentation of a file system object */
 typedef struct
@@ -370,6 +371,21 @@ int lzfw_read(lzfw_vfs_t *p_vfs, creden_t *p_cred, lzfw_vnode_t *p_vnode, void *
  * @return 0 in case of success, the error code overwise
  */
 int lzfw_write(lzfw_vfs_t *p_vfs, creden_t *p_cred, lzfw_vnode_t *p_vnode, void *p_buffer, size_t size, int behind, off_t offset);
+
+/**
+ * Vectorwise write to file
+ * @param p_vfs: the virtual file system
+ * @param cred: the credentials of the user
+ * @param vnode: the vnode
+ * @param iov: array of iovec buffers to write
+ * @param iovcnt: the length of the iov array
+ * @param offset: the logical file offset
+ * @return bytes written if successful, -error code overwise (?)
+ */
+ssize_t lzfw_pwritev(lzfw_vfs_t *p_vfs, creden_t *cred,
+		     lzfw_vnode_t *vnode,
+		     struct iovec *iov, int iovcnt,
+		     off_t offset);
 
 /**
  * Get the stat about a file

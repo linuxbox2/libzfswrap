@@ -2169,7 +2169,6 @@ int lzfw_read(lzfw_vfs_t *p_vfs, creden_t *p_cred, lzfw_vnode_t *p_vnode, void *
         return error;
 }
 
-
 /**
  * Write some data to the given file
  * @param p_vfs: the virtual file system
@@ -2201,6 +2200,47 @@ int lzfw_write(lzfw_vfs_t *p_vfs, creden_t *p_cred, lzfw_vnode_t *p_vnode, void 
 
         ZFS_ENTER(p_zfsvfs);
         int error = VOP_WRITE((vnode_t*)p_vnode, &uio, 0, (cred_t*)p_cred, NULL);
+        ZFS_EXIT(p_zfsvfs);
+
+        return error;
+}
+
+/**
+ * Vectorwise write to file
+ * @param p_vfs: the virtual file system
+ * @param cred: the credentials of the user
+ * @param vnode: the vnode
+ * @param iov: array of iovec buffers to write
+ * @param iovcnt: the length of the iov array
+ * @param offset: the logical file offset
+ * @return bytes written if successful, -error code overwise (?)
+ */
+ssize_t lzfw_pwritev(lzfw_vfs_t *p_vfs, creden_t *cred,
+		     lzfw_vnode_t *vnode,
+		     struct iovec *iov, int iovcnt,
+		     off_t offset)
+{
+        zfsvfs_t *p_zfsvfs = ((vfs_t*)p_vfs)->vfs_data;
+        uio_t uio;
+	int ix, error;
+
+        uio.uio_iov = iov;
+        uio.uio_iovcnt = iovcnt;
+        uio.uio_segflg = UIO_SYSSPACE;
+        uio.uio_fmode = 0; // TODO: Do we have to give the same flags ?
+        uio.uio_llimit = RLIM64_INFINITY;
+        uio.uio_loffset = offset;
+	uio.uio_resid = 0;
+	for (ix = 0; ix < iovcnt; ++ix) {
+	  iovec_t *t_iov = &iov[ix];
+	  uio.uio_resid += iov->iov_len;
+	}
+
+        ZFS_ENTER(p_zfsvfs);
+
+        error = VOP_WRITE((vnode_t*)vnode, &uio, 0, (cred_t*)cred,
+			  NULL);
+
         ZFS_EXIT(p_zfsvfs);
 
         return error;
