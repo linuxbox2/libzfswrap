@@ -2219,7 +2219,7 @@ ssize_t lzfw_preadv(lzfw_vfs_t *p_vfs, creden_t *cred,
  * @param size: the size of the buffer
  * @param behind: do we have to write behind the end of the file ?
  * @param offset: the offset to write
- * @return 0 in case of success, the error code overwise
+ * @return bytes written if successful, -error code overwise (?)
  */
 ssize_t lzfw_write(lzfw_vfs_t *p_vfs, creden_t *p_cred, lzfw_vnode_t *p_vnode, void *p_buffer, size_t size, int behind, off_t offset)
 {
