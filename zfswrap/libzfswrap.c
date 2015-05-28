@@ -2186,7 +2186,8 @@ ssize_t lzfw_preadv(lzfw_vfs_t *p_vfs, creden_t *cred,
 {
         zfsvfs_t *p_zfsvfs = ((vfs_t*)p_vfs)->vfs_data;
         uio_t uio;
-	int ix, error;
+	ssize_t error;
+	int ix;
 
         uio.uio_iov = iov;
         uio.uio_iovcnt = iovcnt;
@@ -2240,7 +2241,7 @@ ssize_t lzfw_write(lzfw_vfs_t *p_vfs, creden_t *p_cred, lzfw_vnode_t *p_vnode, v
                 uio.uio_loffset += VTOZ((vnode_t*)p_vnode)->z_phys->zp_size;
 
         ZFS_ENTER(p_zfsvfs);
-        int error = VOP_WRITE((vnode_t*)p_vnode, &uio, 0, (cred_t*)p_cred, NULL);
+        ssize_t error = VOP_WRITE((vnode_t*)p_vnode, &uio, 0, (cred_t*)p_cred, NULL);
         ZFS_EXIT(p_zfsvfs);
 
         return error;
@@ -2263,7 +2264,8 @@ ssize_t lzfw_pwritev(lzfw_vfs_t *p_vfs, creden_t *cred,
 {
         zfsvfs_t *p_zfsvfs = ((vfs_t*)p_vfs)->vfs_data;
         uio_t uio;
-	int ix, error;
+	ssize_t error;
+	int ix;
 
         uio.uio_iov = iov;
         uio.uio_iovcnt = iovcnt;
