@@ -68,21 +68,27 @@ void lzfw_exit(lzfw_handle_t *p_zhd)
  */
 int lzfw_zpool_create(lzfw_handle_t *p_zhd, const char *psz_name, const char *psz_type, const char **ppsz_dev, size_t i_dev, const char **ppsz_error)
 {
-        int i_error;
-        nvlist_t *pnv_root    = NULL;
-        nvlist_t *pnv_fsprops = NULL;
-        nvlist_t *pnv_props   = NULL;
+  int i_error;
+  nvlist_t *pnv_root    = NULL;
+  nvlist_t *pnv_fsprops = NULL;
+  nvlist_t *pnv_props   = NULL;
 
-        // Create the zpool
-        if(!(pnv_root = lzwu_make_root_vdev(psz_type, ppsz_dev, i_dev, ppsz_error)))
-                return 1;
+  const char *pool_type =
+    (psz_type == "default") ? "" : psz_type;
 
-        i_error = libzfs_zpool_create((libzfs_handle_t*)p_zhd, psz_name, pnv_root, pnv_props, pnv_fsprops, ppsz_error);
+  // Create the zpool
+  if(!(pnv_root = lzwu_make_root_vdev(pool_type, ppsz_dev, i_dev,
+				      ppsz_error)))
+    return 1;
 
-        nvlist_free(pnv_props);
-        nvlist_free(pnv_fsprops);
-        nvlist_free(pnv_root);
-        return i_error;
+  i_error = libzfs_zpool_create((libzfs_handle_t*)p_zhd, psz_name,
+				pnv_root, pnv_props, pnv_fsprops,
+				ppsz_error);
+
+  nvlist_free(pnv_props);
+  nvlist_free(pnv_fsprops);
+  nvlist_free(pnv_root);
+  return i_error;
 }
 
 /**
