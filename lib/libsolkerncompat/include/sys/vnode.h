@@ -464,7 +464,8 @@ extern void vn_setops(vnode_t *vp, struct vnodeops *vnodeops);
 	int	(*vop_shrlock)(vnode_t *, int, struct shrlock *,	\
 				int, cred_t *, caller_context_t *);	\
 	int	(*vop_vnevent)(vnode_t *, vnevent_t, vnode_t *,		\
-				char *, caller_context_t *)
+			       char *, caller_context_t *);		\
+	int	(*vop_holey)(vnode_t *, int, offset_t *, caller_context_t *)
 	/* NB: No ";" */
 
 /*
@@ -558,6 +559,7 @@ extern int	fop_shrlock(vnode_t *, int, struct shrlock *, int, cred_t *,
 				caller_context_t *);
 extern int	fop_vnevent(vnode_t *, vnevent_t, vnode_t *, char *,
 				caller_context_t *);
+extern int	fop_holey(vnode_t *, int, offset_t *, caller_context_t *);
 
 #endif	/* _KERNEL */
 
@@ -649,6 +651,8 @@ extern int	fop_vnevent(vnode_t *, vnevent_t, vnode_t *, char *,
 	fop_shrlock(vp, cmd, shr, f, cr, ct)
 #define	VOP_VNEVENT(vp, vnevent, dvp, fnm, ct) \
 	fop_vnevent(vp, vnevent, dvp, fnm, ct)
+#define	VOP_HOLEY(vp, cmd, dvp, fnm, ct) \
+	fop_holey(vp, cmd, ooff, ct)
 
 #define	VOPNAME_OPEN		"open"
 #define	VOPNAME_CLOSE		"close"
@@ -694,6 +698,7 @@ extern int	fop_vnevent(vnode_t *, vnevent_t, vnode_t *, char *,
 #define	VOPNAME_SETSECATTR	"setsecattr"
 #define	VOPNAME_SHRLOCK		"shrlock"
 #define	VOPNAME_VNEVENT		"vnevent"
+#define	VOPNAME_HOLEY		"holey"
 
 #define AV_SCANSTAMP_SZ 32              /* length of anti-virus scanstamp */
 

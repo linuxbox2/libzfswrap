@@ -243,9 +243,11 @@ zfs_close(vnode_t *vp, int flag, int count, offset_t offset, cred_t *cr,
  * data (cmd == _FIO_SEEK_DATA). "off" is an in/out parameter.
  */
 /* ZFSFUSE: not implemented */
-#if 0
+/* ZFS_SEEK_DATA and ZFS_SEEK_HOLE added with their f-range
+ * ordinal values (97, 98 resp.) by Matt Benjamin.
+ */
 static int
-zfs_holey(vnode_t *vp, int cmd, offset_t *off)
+zfs_holey(vnode_t *vp, int cmd, offset_t *off, caller_context_t *ct)
 {
 	znode_t	*zp = VTOZ(vp);
 	uint64_t noff = (uint64_t)*off; /* new offset */
@@ -258,7 +260,7 @@ zfs_holey(vnode_t *vp, int cmd, offset_t *off)
 		return (ENXIO);
 	}
 
-	if (cmd == _FIO_SEEK_HOLE)
+	if (cmd == ZFS_SEEK_HOLE)
 		hole = B_TRUE;
 	else
 		hole = B_FALSE;
@@ -282,7 +284,6 @@ zfs_holey(vnode_t *vp, int cmd, offset_t *off)
 	*off = noff;
 	return (error);
 }
-#endif
 
 /* ARGSUSED */
 static int
@@ -309,8 +310,8 @@ zfs_ioctl(vnode_t *vp, int com, intptr_t data, int flag, cred_t *cred,
 	case _FIOSDIO:
 		return (0);
 
-	case _FIO_SEEK_DATA:
-	case _FIO_SEEK_HOLE:
+	case ZFS_SEEK_DATA:
+	case ZFS_SEEK_HOLE:
 		if (ddi_copyin((void *)data, &off, sizeof (off), flag))
 			return (EFAULT);
 
@@ -4803,6 +4804,7 @@ const fs_operation_def_t zfs_xdvnodeops_template[] = {
 	VOPNAME_GETSECATTR,	{ .vop_getsecattr = zfs_getsecattr },
 	VOPNAME_SETSECATTR,	{ .vop_setsecattr = zfs_setsecattr },
 	VOPNAME_VNEVENT,	{ .vop_vnevent = fs_vnevent_support },
+	VOPNAME_HOLEY,		{ .vop_holey = zfs_holey },
 	NULL,			NULL
 };
 

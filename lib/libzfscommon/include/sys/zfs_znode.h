@@ -43,6 +43,12 @@ extern "C" {
 #endif
 
 /*
+ * Added to re-enable zfs_holey.
+ */
+#define ZFS_SEEK_DATA 97
+#define ZFS_SEEK_HOLE 98
+
+/*
  * Additional file level attributes, that are stored
  * in the upper half of zp_flags
  */
