@@ -724,7 +724,7 @@ zfs_replay_truncate(zfsvfs_t *zfsvfs, lr_truncate_t *lr, boolean_t byteswap)
 	fl.l_start = lr->lr_offset;
 	fl.l_len = lr->lr_length;
 
-	error = VOP_SPACE(ZTOV(zp), F_FREESP, &fl, FWRITE | FOFFMAX,
+	error = VOP_SPACE(ZTOV(zp), F_FREESP, &fl, FWRITE|FOFFMAX,
 	    lr->lr_offset, kcred, NULL);
 
 	VN_RELE(ZTOV(zp));

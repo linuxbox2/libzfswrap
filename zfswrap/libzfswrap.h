@@ -474,6 +474,18 @@ int lzfw_setxattrat(lzfw_vfs_t *p_vfs, creden_t *p_cred, lzfw_vnode_t *object, c
  */
 int lzfw_listxattr(lzfw_vfs_t *p_vfs, creden_t *p_cred, inogen_t object, char **ppsz_buffer, size_t *p_size);
 
+typedef int (*opxattr_func)(lzfw_vnode_t *vnode, creden_t *cred, const char *name, void *arg);
+
+/**
+ * List extended attributes callback style
+ * @param p_vfs: the virtual file system
+ * @param p_cred: the credentials of the user
+ * @param object: the object
+ * @param cb: per-key callback
+ * @return 0 in case of success, the error code otherwise
+ */
+int lzfw_listxattr2(lzfw_vfs_t *p_vfs, creden_t *p_cred, inogen_t object, opxattr_func cb, void *arg);
+
 /**
  * Add the given (key,value) to the extended attributes.
  * This function will change the value if the key already exist.
@@ -648,5 +660,17 @@ int lzfw_renameat(lzfw_vfs_t *p_vfs, creden_t *p_cred, lzfw_vnode_t *parent, con
  * @return 0 in case of success, the error code overwise
  */
 int lzfw_truncate(lzfw_vfs_t *p_vfs, creden_t *p_cred, inogen_t file, size_t size);
+
+/**
+ * Zero a region of a file (convert to--or extend from EOF--a hole
+ * using VOP_SPACE)
+ * @param p_vfs: the virtual filesystem
+ * @param p_cred: the credentials of the user
+ * @param vnode: the file to truncate
+ * @param length: length of the region
+ * @return 0 in case of success, the error code otherwise
+ */
+int lzfw_zero(lzfw_vfs_t *p_vfs, creden_t *cred, lzfw_vnode_t *vnode,
+	      off_t offset, size_t length);
 
 #endif /* LIBZFSWRAP_H */

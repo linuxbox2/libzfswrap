@@ -1795,6 +1795,87 @@ int lzfw_listxattr(lzfw_vfs_t *p_vfs, creden_t *p_cred, inogen_t object, char **
 }
 
 /**
+ * List extended attributes callback style
+ * @param p_vfs: the virtual file system
+ * @param p_cred: the credentials of the user
+ * @param object: the object
+ * @param cb: per-key callback
+ * @return 0 in case of success, the error code otherwise
+ */
+int lzfw_listxattr2(lzfw_vfs_t *p_vfs, creden_t *p_cred, inogen_t object, opxattr_func cb_func, void *arg)
+{
+  zfsvfs_t *p_zfsvfs = ((vfs_t*)p_vfs)->vfs_data;
+  int i_error;
+  vnode_t *p_vnode;
+
+  ZFS_ENTER(p_zfsvfs);
+  if((i_error = xattr_helper(p_zfsvfs, p_cred, object, &p_vnode)))
+    {
+      ZFS_EXIT(p_zfsvfs);
+      return i_error;
+    }
+
+  // Open the speudo directory
+  if((i_error = VOP_OPEN(&p_vnode, FREAD, (cred_t*)p_cred, NULL)))
+    {
+      VN_RELE(p_vnode);
+      ZFS_EXIT(p_zfsvfs);
+      return i_error;
+    }
+
+  union {
+    char buf[DIRENT64_RECLEN(MAXNAMELEN)];
+    struct dirent64 dirent;
+  } entry;
+
+  iovec_t iovec;
+  uio_t uio;
+  uio.uio_iov = &iovec;
+  uio.uio_iovcnt = 1;
+  uio.uio_segflg = UIO_SYSSPACE;
+  uio.uio_fmode = 0;
+  uio.uio_llimit = RLIM64_INFINITY;
+
+  int eofp = 0;
+  off_t next = 0;
+
+  while(1)
+    {
+      iovec.iov_base = entry.buf;
+      iovec.iov_len = sizeof(entry.buf);
+      uio.uio_resid = iovec.iov_len;
+      uio.uio_loffset = next;
+
+      if((i_error = VOP_READDIR(p_vnode, &uio, (cred_t*)p_cred, &eofp, NULL, 0)))
+	{
+	  VOP_CLOSE(p_vnode, FREAD, 1, (offset_t)0, (cred_t*)p_cred, NULL);
+	  VN_RELE(p_vnode);
+	  ZFS_EXIT(p_zfsvfs);
+	  return i_error;
+	}
+
+      if(iovec.iov_base == entry.buf)
+	break;
+
+      next = entry.dirent.d_off;
+      // Skip '.' and '..'
+      char *s = entry.dirent.d_name;
+      if(*s == '.' && (s[1] == 0 || (s[1] == '.' && s[2] == 0)))
+	continue;
+
+      /* call w/args */
+      (void) cb_func(p_vnode, p_cred, s, arg);
+    }
+
+  VOP_CLOSE(p_vnode, FREAD, 1, (offset_t)0, (cred_t*)p_cred, NULL);
+  VN_RELE(p_vnode);
+  ZFS_EXIT(p_zfsvfs);
+
+  return 0;
+}
+
+
+/**
  * Add the given (key,value) to the extended attributes.
  * This function will change the value if the key already exist.
  * @param p_vfs: the virtual file system
@@ -2852,3 +2933,32 @@ int lzfw_truncate(lzfw_vfs_t *p_vfs, creden_t *p_cred, inogen_t file, size_t siz
         return i_error;
 }
 
+/**
+ * Zero a region of a file (convert to--or extend from EOF--a hole
+ * using VOP_SPACE)
+ * @param p_vfs: the virtual filesystem
+ * @param p_cred: the credentials of the user
+ * @param vnode: the file to truncate
+ * @param length: length of the region
+ * @return 0 in case of success, the error code otherwise
+ */
+int lzfw_zero(lzfw_vfs_t *p_vfs, creden_t *cred, lzfw_vnode_t *vnode,
+	      off_t offset, size_t length)
+{
+  zfsvfs_t *p_zfsvfs = ((vfs_t*)p_vfs)->vfs_data;
+  flock64_t fl;
+
+  fl.l_type = F_WRLCK;
+  fl.l_whence = 0; /* offset is from BOF */
+  fl.l_start = offset;
+  fl.l_len = length;
+
+  ZFS_ENTER(p_zfsvfs);
+
+  int error = VOP_SPACE((vnode_t*)vnode, F_FREESP, &fl, FWRITE|FOFFMAX,
+			offset /* XXX check */, (cred_t*)cred, NULL);
+
+  ZFS_EXIT(p_zfsvfs);
+
+  return error;
+}
