@@ -474,7 +474,7 @@ int lzfw_setxattrat(lzfw_vfs_t *p_vfs, creden_t *p_cred, lzfw_vnode_t *object, c
  */
 int lzfw_listxattr(lzfw_vfs_t *p_vfs, creden_t *p_cred, inogen_t object, char **ppsz_buffer, size_t *p_size);
 
-typedef int (*opxattr_func)(lzfw_vnode_t *vnode, creden_t *cred, const char *name, void *arg);
+typedef int (*opxattr_func)(lzfw_vnode_t *vnode, inogen_t object, creden_t *cred, const char *name, void *arg);
 
 /**
  * List extended attributes callback style

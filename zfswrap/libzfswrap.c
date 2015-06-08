@@ -1839,6 +1839,8 @@ int lzfw_listxattr2(lzfw_vfs_t *p_vfs, creden_t *p_cred, inogen_t object, opxatt
   int eofp = 0;
   off_t next = 0;
 
+  inogen_t obj;
+
   while(1)
     {
       iovec.iov_base = entry.buf;
@@ -1863,8 +1865,11 @@ int lzfw_listxattr2(lzfw_vfs_t *p_vfs, creden_t *p_cred, inogen_t object, opxatt
       if(*s == '.' && (s[1] == 0 || (s[1] == '.' && s[2] == 0)))
 	continue;
 
+      obj.inode = VTOZ(p_vnode)->z_id;
+      obj.generation = VTOZ(p_vnode)->z_phys->zp_gen;
+
       /* call w/args */
-      (void) cb_func(p_vnode, p_cred, s, arg);
+      (void) cb_func(p_vnode, obj, p_cred, s, arg);
     }
 
   VOP_CLOSE(p_vnode, FREAD, 1, (offset_t)0, (cred_t*)p_cred, NULL);
