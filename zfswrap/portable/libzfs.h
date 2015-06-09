@@ -695,6 +695,9 @@ int libzfs_zpool_vdev_remove(zpool_handle_t *p_zpool, const char *psz_name, cons
 int libzfs_zpool_vdev_attach(zpool_handle_t *p_zpool, const char *psz_current_dev, nvlist_t *pnv_root, int i_replacing, const char **ppsz_error);
 int libzfs_zpool_vdev_detach(zpool_handle_t *p_zpool, const char *psz_device, const char **ppsz_error);
 
+  /* more CEA extras */
+  int libzfs_zfs_iter(libzfs_handle_t *p_libzfshd, zfs_iter_f func, void *data, const char **ppsz_error);
+
 #ifdef	__cplusplus
 }
 #endif
