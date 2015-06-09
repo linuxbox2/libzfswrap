@@ -39,7 +39,7 @@ typedef struct
 } creden_t;
 
 /** libzfswrap library handle */
-typedef struct libzfs_handle_t lzfw_handle_t;
+typedef struct libzfs_handle lzfw_handle_t;
 /** Virtual file system handle */
 typedef struct vfs_t lzfw_vfs_t;
 /** Virtual node handle */
