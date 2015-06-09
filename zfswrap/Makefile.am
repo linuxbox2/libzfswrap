@@ -1,7 +1,12 @@
 lib_LTLIBRARIES = libzfswrap.la
 
 library_includedir=$(includedir)
-library_include_HEADERS = libzfswrap.h
+library_include_HEADERS = libzfswrap.h \
+	portable/avl.h \
+	portable/avl_impl.h \
+	portable/nvpair.h \
+	portable/zfs.h \
+	portable/libzfs.h
 
 libzfswrap_la_SOURCES = ptrace.c zfs_acl.c zfs_dir.c zfs_ioctl.c zfs_log.c zfs_replay.c zfs_rlock.c zfs_vfsops.c zfs_vnops.c zvol.c zfsfuse_socket.c libzfswrap_utils.c libzfswrap.c
 libzfswrap_la_LIBADD = ${top_builddir}/lib/libatomic/libatomic.la \
@@ -22,6 +27,7 @@ libzfswrap_la_CFLAGS = -I${top_srcdir}/lib/libavl/include \
                        -I${top_srcdir}/lib/libzfscommon/include \
                        -I${top_srcdir}/lib/libsolkerncompat/include \
                        -I${top_srcdir}/lib/libsolcompat/include \
+                       -Iportable \
                        -D_KERNEL @DEBUG_CFLAGS@
 AM_LDFLAGS = -lrt -lpthread -ldl -lz -laio -lcrypto -lm
 

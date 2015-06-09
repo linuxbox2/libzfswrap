@@ -5,6 +5,7 @@
 #include <sys/stat.h>
 #include <sys/statvfs.h>
 #include <sys/uio.h>
+#include <libzfs.h>
 
 /** Reprensentation of a file system object */
 typedef struct
@@ -169,6 +170,18 @@ int lzfw_zpool_status(lzfw_handle_t *p_zhd, const char **ppsz_error);
  * @return 0 in case of success, the error code overwise
  */
 int lzfw_zfs_list(lzfw_handle_t *p_zhd, const char *psz_props, const char **ppsz_error);
+
+/**
+ * Callback-based iteration over ZFS datasets
+ * @param p_zhd: the libzfswrap handle
+ * @param psz_props: the properties to retrieve
+ * @param ppsz_error: the error message if any
+ * @return 0 in case of success, the error code overwise
+ */
+typedef int (*datasets_func)(zpool_handle_t *zpool, void *data);
+
+int lzfw_datasets(lzfw_handle_t *p_zhd, const char *psz_props,
+		  datasets_func cb, const char **ppsz_error);
 
 /**
  * List the available snapshots for the given zfs
