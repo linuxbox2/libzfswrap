@@ -99,7 +99,7 @@ int libzfs_dataset_name_valid(const char *psz_zfs, int type,
  * @param pnv_props: the tree of properties (can be NULL)
  * @param pnv_fsprops: the tree of the file system properties (can be NULL)
  * @param ppsz_error: the error message if any
- * @return 0 in case of error, the error code overwise
+ * @return 0 in case of error, the error code otherwise
  */
 int libzfs_zpool_create(libzfs_handle_t *p_libzfshd, const char* psz_zpool,
                         nvlist_t *pnv_root, nvlist_t *pnv_props,
@@ -258,7 +258,7 @@ zpool_handle_t *libzfs_zpool_open(libzfs_handle_t *p_libzfshd, const char *psz_p
  * Add a vdev to a given zpool
  * @param psz_name: zpool name
  * @param pnv_root: the root tree
- * @return 0 in case of success, the error code overwise
+ * @return 0 in case of success, the error code otherwise
  */
 int libzfs_zpool_vdev_add(const char *psz_name, nvlist_t *pnv_root)
 {
@@ -301,7 +301,7 @@ int libzfs_zpool_vdev_add(const char *psz_name, nvlist_t *pnv_root)
  * @param p_zpool: the zpool handler
  * @param psz_name: the name of the device to remove
  * @param ppsz_error: the error message if any
- * @return 0 in case of success, the error code overwise
+ * @return 0 in case of success, the error code otherwise
  */
 int libzfs_zpool_vdev_remove(zpool_handle_t *p_zpool, const char *psz_name, const char **ppsz_error)
 {
@@ -345,7 +345,7 @@ int libzfs_zpool_vdev_remove(zpool_handle_t *p_zpool, const char *psz_name, cons
 
 /**
  * Attach a vdev to a given zpool
- * @return 0 in case of success, the error code overwise
+ * @return 0 in case of success, the error code otherwise
  */
 int libzfs_zpool_vdev_attach(zpool_handle_t *p_zpool, const char *psz_current_dev, nvlist_t *pnv_root, int i_replacing, const char **ppsz_error)
 {
@@ -412,7 +412,7 @@ int libzfs_zpool_vdev_attach(zpool_handle_t *p_zpool, const char *psz_current_de
  * @param p_zpool: the zpool handler
  * @param psz_device: the device name
  * @param ppsz_error: the error message if any
- * @return 0 in case of success, the error code overwise
+ * @return 0 in case of success, the error code otherwise
  */
 int libzfs_zpool_vdev_detach(zpool_handle_t *p_zpool, const char *psz_device, const char **ppsz_error)
 {
@@ -578,7 +578,7 @@ static int namespace_reload(libzfs_handle_t *p_hdl)
  * @param func: the function to call for each zpool
  * @param data: anonymous data to pass along to the callback function
  * @param ppsz_error: the error message if any
- * @return 0 in case of success, the error code overwise
+ * @return 0 in case of success, the error code otherwise
  */
 int libzfs_zpool_iter(libzfs_handle_t *p_libzfshd, zpool_iter_f func, void *data, const char **ppsz_error)
 {
@@ -808,7 +808,7 @@ void libzfs_zfs_close(zfs_handle_t *p_zfs)
  * @param func: the function to call for each zfs
  * @param data: anonymous data to pass along to the callback function
  * @param ppsz_error: the error message if any
- * @return 0 in case of success, the error code overwise
+ * @return 0 in case of success, the error code otherwise
  */
 int libzfs_zfs_iter(libzfs_handle_t *p_libzfshd, zfs_iter_f func, void *data, const char **ppsz_error)
 {
@@ -917,7 +917,7 @@ int libzfs_zfs_validate_name(const char *path, int type, boolean_t modifying,
  * Open the given snapshot, filesystem or volume.
  * @param p_libzfshd: the libzfs handle
  * @param ppsz_error: the error message if any
- * @return the zfs handle in case of success, NULL overwise
+ * @return the zfs handle in case of success, NULL otherwise
  */
 zfs_handle_t *libzfs_zfs_open(libzfs_handle_t *p_libzfshd, const char *psz_path, int type, const char **ppsz_error)
 {
@@ -995,7 +995,7 @@ top:
  * @param func: the function to call for each zfs
  * @param data: anonymous data to pass along to the callback function
  * @param ppsz_error: the error message if any
- * @return the zfs handle in case of success, NULL overwise
+ * @return the zfs handle in case of success, NULL otherwise
  */
 int libzfs_zfs_snapshot_iter(libzfs_handle_t *p_libzfshd, const char *psz_zfs, zfs_iter_f func, void *data, const char **ppsz_error)
 {
