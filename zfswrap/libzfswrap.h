@@ -6,6 +6,7 @@
 #include <sys/statvfs.h>
 #include <sys/uio.h>
 #include <libzfs.h>
+#include <libzfs_impl.h>
 
 /** Reprensentation of a file system object */
 typedef struct

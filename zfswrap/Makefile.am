@@ -5,8 +5,11 @@ library_include_HEADERS = libzfswrap.h \
 	portable/avl.h \
 	portable/avl_impl.h \
 	portable/nvpair.h \
+	portable/dmu.h \
+	portable/libuutil.h \
 	portable/zfs.h \
-	portable/libzfs.h
+	portable/libzfs.h \
+	portable/libzfs_impl.h
 
 libzfswrap_la_SOURCES = ptrace.c zfs_acl.c zfs_dir.c zfs_ioctl.c zfs_log.c zfs_replay.c zfs_rlock.c zfs_vfsops.c zfs_vnops.c zvol.c zfsfuse_socket.c libzfswrap_utils.c libzfswrap.c
 libzfswrap_la_LIBADD = ${top_builddir}/lib/libatomic/libatomic.la \

@@ -29,6 +29,9 @@
 
 #include <nvpair.h>
 #include <sys/param.h>
+#ifndef MAXNAMELEN
+#define MAXNAMELEN 256
+#endif
 #include <sys/types.h>
 #include <zfs.h>
 #include <avl.h>
