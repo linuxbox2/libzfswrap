@@ -693,32 +693,73 @@ int lzfw_zfs_list(lzfw_handle_t *p_zhd, const char *psz_props, const char **ppsz
         return 0;
 }
 
+static boolean_t
+dataset_name_hidden(const char *name)
+{
+  /*
+   * Skip over datasets that are not visible in this zone,
+   * internal datasets (which have a $ in their name), and
+   * temporary datasets (which have a % in their name).
+   */
+  if (strchr(name, '$') != NULL)
+    return (B_TRUE);
+  if (strchr(name, '%') != NULL)
+    return (B_TRUE);
+  return (B_FALSE);
+}
+
 /**
  * Callback-based iteration over ZFS datasets
- * @param p_zhd: the libzfswrap handle
- * @param psz_props: the properties to retrieve
- * @param ppsz_error: the error message if any
+ * @param zhd: the libzfswrap handle
+ * @param parent_ds_name: parent name (fully qualified, if not a pool/root)
+ * @param func: function to call for each (non-hidden) dataset
+ * @param arg: opaque argument which will be passed to func
+ * @param ppsz_error: error message if any
  * @return 0 in case of success, the error code otherwise
  */
-typedef int (*datasets_func)(zpool_handle_t *zpool, void *data);
-
-int lzfw_datasets(lzfw_handle_t *p_zhd, const char *psz_props,
-		  datasets_func cb, const char **ppsz_error)
+int lzfw_datasets_iter(libzfs_handle_t *zhd, const char *parent_ds_name,
+		       zfs_iter_f func, void *arg, const char **ppsz_error)
 {
-  zprop_list_t *p_zprop_list = NULL;
-  static char psz_default_props[] = "name,used,available,referenced,mountpoint";
-  if(zprop_get_list((libzfs_handle_t*)p_zhd,
-		    psz_props ? psz_props : psz_default_props,
-		    &p_zprop_list, ZFS_TYPE_DATASET))
-    {
-      *ppsz_error = "Unable to get the list of properties";
-      return 1;
+  char *p;
+  objset_t *os;
+  zfs_handle_t *a_zhp;
+  char ds_name[MAXNAMELEN];
+  int error = 0;
+
+  strlcpy(ds_name, parent_ds_name, sizeof(ds_name));
+
+  if (error = dmu_objset_hold(ds_name, FTAG, &os)) {
+    if (error == ENOENT)
+      error = ESRCH;
+    return (error);
+  }
+
+  p = strrchr(ds_name, '/');
+  if (p == NULL || p[1] != '\0')
+    (void) strlcat(ds_name, "/", sizeof (ds_name)); /* XXX */
+  p = ds_name + strlen(ds_name);
+
+  uint64_t cookie = 0;
+  int len = sizeof (ds_name) - (p - ds_name);
+  while (dmu_dir_list_next(os, len, p, NULL, &cookie) == 0) {
+    (void) dmu_objset_prefetch(p, NULL);
+    /* ignore internal datasets (e.g., $ORIGIN) */
+    if (! dataset_name_hidden(ds_name)) {
+      a_zhp = libzfs_make_dataset_handle(zhd, ds_name);
+      if (! a_zhp) {
+	*ppsz_error = "Unable to create the zfs_handle";
+	error = EINVAL;
+	goto rele;
+      }
+      /* call supplied function */
+      error = func(a_zhp, arg);
+      /* release libzfs handle */
+      libzfs_zfs_close(a_zhp);
     }
-
-  libzfs_zfs_iter((libzfs_handle_t*)p_zhd, cb, p_zprop_list, ppsz_error );
-  zprop_free_list(p_zprop_list);
-
-  return 0;
+  }
+ rele:
+  dmu_objset_rele(os, FTAG);
+  return error;
 }
 
 /**
@@ -795,19 +836,25 @@ zfs_create_cb(objset_t *os, void *arg, cred_t *cr, dmu_tx_t *tx)
  * @param ppsz_error: the error message if any
  * @return 0 in case of success, the error code otherwise
  */
-int lzfw_dataset_create(lzfw_handle_t *p_zhd, const char *psz_zfs, int type,
-			const char **ppsz_error)
+int lzfw_dataset_create(lzfw_handle_t *p_zhd, const char *psz_zfs,
+			int type, const char **ppsz_error)
 {
   zfs_creat_t zct;
   nvlist_t *nvprops = NULL;
+  dmu_objset_type_t os_type;
   int i_error = 0;
 
   /* Check the zpool name */
   if (! libzfs_dataset_name_valid(psz_zfs, ppsz_error))
     return EINVAL;
 
-  /* XXX can't create zvols, this interface not for clones */
-  assert(type == ZFS_TYPE_FILESYSTEM);
+  assert(type == ZFS_TYPE_FILESYSTEM); /* no ZVOLs currently */
+  switch(type) {
+  case ZFS_TYPE_FILESYSTEM:
+  default:
+    os_type = DMU_OST_ZFS; /* beware, several OST types exist */
+    break;
+  };
 
   zct.zct_zplprops = NULL;
   zct.zct_props = nvprops;
@@ -829,7 +876,7 @@ int lzfw_dataset_create(lzfw_handle_t *p_zhd, const char *psz_zfs, int type,
     return (i_error);
   }
 
-  i_error = dmu_objset_create(psz_zfs, type,
+  i_error = dmu_objset_create(psz_zfs, os_type,
 			      is_insensitive ? DS_FLAG_CI_DATASET : 0,
 			      zfs_create_cb, &zct);
   nvlist_free(zct.zct_zplprops);

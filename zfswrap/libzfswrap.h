@@ -169,19 +169,20 @@ int lzfw_zpool_status(lzfw_handle_t *p_zhd, const char **ppsz_error);
  * @param ppsz_error: the error message if any
  * @return 0 in case of success, the error code overwise
  */
-int lzfw_zfs_list(lzfw_handle_t *p_zhd, const char *psz_props, const char **ppsz_error);
+int lzfw_zfs_list(lzfw_handle_t *p_zhd, const char *psz_props,
+		  const char **ppsz_error);
 
 /**
  * Callback-based iteration over ZFS datasets
- * @param p_zhd: the libzfswrap handle
- * @param psz_props: the properties to retrieve
- * @param ppsz_error: the error message if any
- * @return 0 in case of success, the error code overwise
+ * @param zhd: the libzfswrap handle
+ * @param parent_ds_name: parent name (fully qualified, if not a pool/root)
+ * @param func: function to call for each (non-hidden) dataset
+ * @param arg: opaque argument which will be passed to func
+ * @param ppsz_error: error message if any
+ * @return 0 in case of success, the error code otherwise
  */
-typedef int (*datasets_func)(zpool_handle_t *zpool, void *data);
-
-int lzfw_datasets(lzfw_handle_t *p_zhd, const char *psz_props,
-		  datasets_func cb, const char **ppsz_error);
+int lzfw_datasets_iter(libzfs_handle_t *zhd, const char *parent_ds_name,
+		       zfs_iter_f func, void *arg, const char **ppsz_error);
 
 /**
  * List the available snapshots for the given zfs

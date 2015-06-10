@@ -819,7 +819,7 @@ int libzfs_zfs_iter(libzfs_handle_t *p_libzfshd, zfs_iter_f func, void *data, co
         if(namespace_reload(p_libzfshd))
         {
                 *ppsz_error = "Unable to reload the namespace";
-                return 1;
+                /* return 1; */
         }
 
         for(p_cn = uu_avl_first(p_libzfshd->libzfs_ns_avl); p_cn;
