@@ -1417,6 +1417,52 @@ int lzfw_create(lzfw_vfs_t *p_vfs, creden_t *p_cred, inogen_t parent, const char
 }
 
 /**
+ * Create the given file
+ * @param p_vfs: the virtual file system
+ * @param p_cred: the credentials of the user
+ * @param parent: parent vnode
+ * @param psz_filename: the file name
+ * @param mode: the file mode
+ * @param p_file: return the file
+ * @return 0 in case of success the error code otherwise
+ */
+int lzfw_createat(lzfw_vfs_t *vfs, creden_t *cred,
+		  lzfw_vnode_t *parent, const char *psz_filename,
+		  mode_t mode, inogen_t *file)
+{
+  zfsvfs_t *zfsvfs = ((vfs_t*)vfs)->vfs_data;
+  znode_t *parent_znode;
+  int error;
+
+  ZFS_ENTER(zfsvfs);
+
+  vnode_t *parent_vnode = (vnode_t*) parent;
+  parent_znode = VTOZ(parent_vnode);
+
+  vattr_t vattr = { 0 };
+  vattr.va_type = VREG;
+  vattr.va_mode = mode;
+  vattr.va_mask = AT_TYPE | AT_MODE;
+
+  vnode_t *new_vnode;
+  if((error = VOP_CREATE(parent_vnode, (char*)psz_filename, &vattr,
+			 NONEXCL, mode, &new_vnode, (cred_t*)cred, 0,
+			 NULL, NULL))) {
+    ZFS_EXIT(zfsvfs);
+    return error;
+  }
+
+  file->inode = VTOZ(new_vnode)->z_id;
+  file->generation = VTOZ(new_vnode)->z_phys->zp_gen;
+
+  VN_RELE(new_vnode);
+
+  ZFS_EXIT(zfsvfs);
+
+  return 0;
+}
+
+/**
  * Open a directory
  * @param p_vfs: the virtual filesystem
  * @param p_cred: the credentials of the user
