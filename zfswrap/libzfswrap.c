@@ -1418,12 +1418,12 @@ int lzfw_create(lzfw_vfs_t *p_vfs, creden_t *p_cred, inogen_t parent, const char
 
 /**
  * Create the given file
- * @param p_vfs: the virtual file system
- * @param p_cred: the credentials of the user
+ * @param vfs: the virtual file system
+ * @param cred: the credentials of the user
  * @param parent: parent vnode
  * @param psz_filename: the file name
  * @param mode: the file mode
- * @param p_file: return the file
+ * @param file: return the file
  * @return 0 in case of success the error code otherwise
  */
 int lzfw_createat(lzfw_vfs_t *vfs, creden_t *cred,
