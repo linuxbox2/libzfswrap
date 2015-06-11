@@ -2,6 +2,7 @@
 #include <libsolkerncompat.h>
 
 #include <sys/types.h>
+#include <sys/dirent.h>
 #include <sys/statfs.h>
 #include <sys/statvfs.h>
 #include <sys/vfs.h>
