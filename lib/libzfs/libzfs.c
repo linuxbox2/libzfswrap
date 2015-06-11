@@ -580,46 +580,44 @@ static int namespace_reload(libzfs_handle_t *p_hdl)
  * @param ppsz_error: the error message if any
  * @return 0 in case of success, the error code otherwise
  */
-int libzfs_zpool_iter(libzfs_handle_t *p_libzfshd, zpool_iter_f func, void *data, const char **ppsz_error)
+int libzfs_zpool_iter(libzfs_handle_t *zhd, zpool_iter_f func,
+		      void *data,  const char **ppsz_error)
 {
-        config_node_t *p_config_node;
+  config_node_t *p_config_node;
 
-        /*
-         * If someone makes a recursive call to zpool_iter(), we want to avoid
-         * refreshing the namespace because that will invalidate the parent
-         * context.  We allow recursive calls, but simply re-use the same
-         * namespace AVL tree.
-         */
-        if(!p_libzfshd->libzfs_pool_iter && namespace_reload(p_libzfshd))
-        {
-                *ppsz_error = "unable to reload the namespace";
-                return -1;
-        }
+  /*
+   * If someone makes a recursive call to zpool_iter(), we want to avoid
+   * refreshing the namespace because that will invalidate the parent
+   * context.  We allow recursive calls, but simply re-use the same
+   * namespace AVL tree.
+   */
+  if(!zhd->libzfs_pool_iter && namespace_reload(zhd)) {
+    *ppsz_error = "failed to reload namespace";
+    return -EIO;
+  }
 
-        p_libzfshd->libzfs_pool_iter++;
-        for(p_config_node = uu_avl_first(p_libzfshd->libzfs_ns_avl);
-            p_config_node;
-            p_config_node = uu_avl_next(p_libzfshd->libzfs_ns_avl, p_config_node))
-        {
-                zpool_handle_t *p_zpool = libzfs_zpool_open_canfail(p_libzfshd,
-                                                p_config_node->cn_name, ppsz_error);
+  zhd->libzfs_pool_iter++;
+  for(p_config_node = uu_avl_first(zhd->libzfs_ns_avl); p_config_node;
+      p_config_node = uu_avl_next(zhd->libzfs_ns_avl, p_config_node)) {
+    zpool_handle_t *p_zpool =
+      libzfs_zpool_open_canfail(zhd, p_config_node->cn_name, ppsz_error);
 
-                if(!p_zpool)
-                        continue;
+      if(!p_zpool)
+	continue;
 
-                /* Call the callback function: it might return 0 */
-                int i_ret = func(p_zpool, data);
-                libzfs_zpool_close(p_zpool);
-                if(i_ret)
-                {
-                        *ppsz_error = "error when calling the callback function";
-                        p_libzfshd->libzfs_pool_iter--;
-                        return i_ret;
-                }
-        }
-        p_libzfshd->libzfs_pool_iter--;
+      /* Call the callback function: it might return 0 */
+      int i_ret = func(p_zpool, data);
+      libzfs_zpool_close(p_zpool);
+      if(i_ret)
+	{
+	  *ppsz_error = "error when calling the callback function";
+	  zhd->libzfs_pool_iter--;
+	  return i_ret;
+	}
+    }
+  zhd->libzfs_pool_iter--;
 
-        return 0;
+  return 0;
 }
 
 /*

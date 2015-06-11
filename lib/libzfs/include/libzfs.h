@@ -203,6 +203,8 @@ extern void zpool_free_handles(libzfs_handle_t *);
  */
 typedef int (*zpool_iter_f)(zpool_handle_t *, void *);
 extern int zpool_iter(libzfs_handle_t *, zpool_iter_f, void *);
+extern int libzfs_zpool_iter(libzfs_handle_t *, zpool_iter_f, void *,
+			     const char ** /* error str */);
 
 /*
  * Functions to create and destroy pools

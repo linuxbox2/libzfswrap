@@ -300,7 +300,7 @@ int lzfw_zpool_list(lzfw_handle_t *p_zhd, const char *psz_props, const char **pp
         }
 
         lzwu_zpool_print_list_header(p_zprop_list);
-        libzfs_zpool_iter((libzfs_handle_t*)p_zhd, lzfw_zpool_list_callback, p_zprop_list);
+        libzfs_zpool_iter((libzfs_handle_t*)p_zhd, lzfw_zpool_list_callback, p_zprop_list, ppsz_error);
         zprop_free_list(p_zprop_list);
 
         return 0;
@@ -594,7 +594,7 @@ int lzfw_zpool_status(lzfw_handle_t *p_zhd, const char **ppsz_error)
         cb_data.cb_dedup_stats = B_FALSE;
         cb_data.p_zhd = (libzfs_handle_t*)p_zhd;
 
-        libzfs_zpool_iter((libzfs_handle_t*)p_zhd, lzfw_zpool_status_callback, &cb_data);
+        libzfs_zpool_iter((libzfs_handle_t*)p_zhd, lzfw_zpool_status_callback, &cb_data, ppsz_error);
 
         return 0;
 }
