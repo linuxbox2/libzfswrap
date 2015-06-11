@@ -31,7 +31,7 @@
 #include <zfs.h>
 #if 0
 #include <sys/zfs_acl.h>
-#include <sys/spa.h>
+#include <spa.h>
 #endif /* 0 */
 #include <nvpair.h>
 #include <libuutil.h>

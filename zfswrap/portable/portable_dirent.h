@@ -28,19 +28,19 @@
  * Use is subject to license terms.
  */
 
-#ifndef _SYS_DIRENT_H
-#define	_SYS_DIRENT_H
+#ifndef PORTABLE_DIRENT_H
+#define	PORTABLE_DIRENT_H
 
 #ifdef	__cplusplus
 extern "C" {
 #endif
 
-#if 0
+#if !defined(_SYS_DIRENT_H)
 
 typedef __ino64_t ino64_t;
 typedef __off64_t off64_t;
 
-typedef struct dirent64 {
+typedef struct zfs_dirent64 {
 	ino64_t		d_ino;		/* "inode number" of entry */
 	off64_t		d_off;		/* offset of disk directory entry */
 	unsigned short	d_reclen;	/* length of this record */
@@ -52,10 +52,10 @@ typedef struct dirent64 {
 #define	DIRENT64_NAMELEN(reclen)	\
 	((reclen) - (offsetof(dirent64_t, d_name[0])))
 
-#endif /* 0 */
+#endif /* !defined(_SYS_DIRENT_H) */
 
 #ifdef	__cplusplus
 }
 #endif
 
-#endif	/* _SYS_DIRENT_H */
+#endif	/* PORTABLE_DIRENT_H */

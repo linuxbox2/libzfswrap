@@ -7,6 +7,7 @@
 #include <sys/uio.h>
 #include <libzfs.h>
 #include <libzfs_impl.h>
+#include <portable_dirent.h>
 
 /** Reprensentation of a file system object */
 typedef struct
