@@ -8,6 +8,8 @@ library_include_HEADERS = libzfswrap.h \
 	portable/dmu.h \
 	portable/libuutil.h \
 	portable/portable_dirent.h \
+	portable/zfs_context.h \
+	portable/zfs_znode.h \
 	portable/zfs.h \
 	portable/libzfs.h \
 	portable/libzfs_impl.h
