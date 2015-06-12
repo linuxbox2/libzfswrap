@@ -257,7 +257,7 @@ struct pollhead;
 enum rm { RMFILE, RMDIRECTORY };           /* rm or rmdir (remove) */
 enum symfollow { NO_FOLLOW, FOLLOW };      /* follow symlinks (or not) */
 enum vcexcl { NONEXCL, EXCL };             /* (non)excl create */
-enum create { CRCREAT, CRMKNOD, CRMKDIR }; /* reason for create */
+enum vcreate { CRCREAT, CRMKNOD, CRMKDIR }; /* reason for create */
 
 /*
  * Flags to VOP_SETATTR/VOP_GETATTR.
@@ -282,7 +282,7 @@ typedef enum vnevent	{
 typedef enum rm        rm_t;
 typedef enum symfollow symfollow_t;
 typedef enum vcexcl    vcexcl_t;
-typedef enum create    create_t;
+typedef enum vcreate    create_t;
 
 extern int vn_vfswlock(vnode_t *);
 extern void vn_vfsunlock(vnode_t *vp);
@@ -318,8 +318,8 @@ extern void vn_free(vnode_t *vp);
 extern void vn_rele(vnode_t *vp);
 extern void vn_rele_async(struct vnode *vp, struct taskq *taskq);
 
-extern int vn_open(char *pnamep, enum uio_seg seg, int filemode, int createmode, struct vnode **vpp, enum create crwhy, mode_t umask);
-extern int vn_openat(char *pnamep, enum uio_seg seg, int filemode, int createmode, struct vnode **vpp, enum create crwhy, mode_t umask, struct vnode *startvp, int fd);
+extern int vn_open(char *pnamep, enum uio_seg seg, int filemode, int createmode, struct vnode **vpp, create_t crwhy, mode_t umask);
+extern int vn_openat(char *pnamep, enum uio_seg seg, int filemode, int createmode, struct vnode **vpp, create_t crwhy, mode_t umask, struct vnode *startvp, int fd);
 extern int vn_rdwr(enum uio_rw rw, struct vnode *vp, caddr_t base, ssize_t len, offset_t offset, enum uio_seg seg, int ioflag, rlim64_t ulimit, cred_t *cr, ssize_t *residp);
 extern void vn_close(vnode_t *vp);
 
