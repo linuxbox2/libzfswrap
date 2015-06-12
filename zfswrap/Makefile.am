@@ -15,6 +15,7 @@ library_include_HEADERS = libzfswrap.h \
 	portable/kmem.h \
 	portable/mutex.h \
 	portable/portable_thread.h \
+	portable/rwstlock.h \
 	portable/rwlock.h \
 	portable/seg_enum.h \
 	portable/stat.h \
