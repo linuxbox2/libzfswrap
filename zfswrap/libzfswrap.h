@@ -9,6 +9,7 @@
 #include <libzfs_impl.h>
 #include <portable_dirent.h>
 #include <zfs_znode.h>
+#include <vnode.h>
 
 /** Reprensentation of a file system object */
 typedef struct

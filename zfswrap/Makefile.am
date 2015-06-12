@@ -8,6 +8,23 @@ library_include_HEADERS = libzfswrap.h \
 	portable/dmu.h \
 	portable/libuutil.h \
 	portable/portable_dirent.h \
+	portable/vnode.h \
+	portable/cred.h \
+	portable/feature_tests.h \
+	portable/isa_defs.h \
+	portable/kmem.h \
+	portable/mutex.h \
+	portable/portable_thread.h \
+	portable/rwlock.h \
+	portable/seg_enum.h \
+	portable/stat.h \
+	portable/taskq.h \
+	portable/types.h \
+	portable/types32.h \
+	portable/int_types.h \
+	portable/uio.h \
+	portable/umem.h \
+	portable/vmem.h \
 	portable/zfs_znode.h \
 	portable/zfs_fuid.h \
 	portable/zfs_acl.h \
