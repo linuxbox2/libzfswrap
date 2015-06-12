@@ -35,8 +35,10 @@ typedef va_list __va_list;
 typedef unsigned int uint_t;
 typedef unsigned char uchar_t;
 typedef unsigned long ulong_t;
+typedef unsigned short ushort_t;
 typedef enum boolean { B_FALSE=0, B_TRUE } boolean_t;
 typedef uint64_t hrtime_t;
+typedef ushort_t o_mode_t;
 #else
 #include <sys/va_list.h>
 #endif

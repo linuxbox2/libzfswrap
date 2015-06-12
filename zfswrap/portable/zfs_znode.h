@@ -37,8 +37,10 @@
 #include <sys/zfs_vfsops.h>
 #include <sys/rrwlock.h>
 #endif
-#include <sys/zfs_acl.h>
+#include <zfs_acl.h>
+#if 0 /* XXX not needed yet */
 #include <sys/zil.h>
+#endif /* 0 */
 
 #ifdef	__cplusplus
 extern "C" {
@@ -123,7 +125,9 @@ extern "C" {
  * to tell the users via pathconf() and statvfs() what the
  * true maximum length of a component is, excluding the NULL.
  */
+#if !defined(ZFS_MAXNAMELEN) /* XXX bad juju here */
 #define	ZFS_MAXNAMELEN	(MAXNAMELEN - 1)
+#endif
 
 /*
  * Convert mode bits (zp_mode) to BSD-style DT_* values for storing in
