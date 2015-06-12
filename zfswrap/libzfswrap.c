@@ -1601,35 +1601,6 @@ int lzfw_readdir(lzfw_vfs_t *p_vfs, creden_t *p_cred, lzfw_vnode_t *p_vnode, lzf
  * @return 0 on success, the error code otherwise
  */
 
-#define LZFW_DI_CB_IFLAG_NONE   0x0000
-#define LZFW_DI_CB_IFLAG_EOF    0x0001
-#define LZFW_DI_CB_IFLAG_ATTR   0x0002
-
-#define LZFW_DI_CB_OFLAG_NONE        0x0000
-#define LZFW_DI_CB_OFLAG_INVALIDATE  0x0001 /* iteration invalidated */
-
-typedef struct dir_iter_cb_context
-{
-  dirent64_t *dirent;
-  vattr_t *vattr;
-  uint64_t gen;
-  uint32_t iflags; /* caller flags */
-  uint32_t oflags; /* called-function flags */
-} dir_iter_cb_context_t;
-
-#define init_di_cb_context(ctx) \
-  do {					       \
-    (ctx)->vattr = NULL;                       \
-    (ctx)->iflags = LZFW_DI_CB_IFLAG_NONE;     \
-    (ctx)->oflags = LZFW_DI_CB_OFLAG_NONE;     \
-  } while (0)
-
-typedef int (*dir_iter_f)(lzfw_vnode_t *, dirent64_t *, void *);
-
-#define LZFW_DI_FLAG_NONE     0x0000
-#define LZFW_DI_FLAG_GEN      0x0001
-#define LZFW_DI_FLAG_GETATTR  0x0002
-
 static inline
 int vattr_helper(vfs_t *vfs, creden_t *cred, dir_iter_cb_context_t *cb_ctx)
 {

@@ -561,6 +561,48 @@ int lzfw_opendir(lzfw_vfs_t *p_vfs, creden_t *p_cred, inogen_t directory, lzfw_v
 int lzfw_readdir(lzfw_vfs_t *p_vfs, creden_t *p_cred, lzfw_vnode_t *p_vnode, lzfw_entry_t *p_entries, size_t size, off_t *cookie);
 
 /**
+ * Callback-based iteration over ZFS directories
+ * @param vfs: the virtual filesystem
+ * @param cred: the credentials of the user
+ * @param vnode: an open directory vnode
+ * @param dir_iter_f: function to call for each entry
+ * @param arg: opaque argument which will be passed to func
+ * @param cookie: offset from which to iterate (0 for beginning)
+ * @return 0 on success, the error code otherwise
+ */
+#define LZFW_DI_CB_IFLAG_NONE   0x0000
+#define LZFW_DI_CB_IFLAG_EOF    0x0001
+#define LZFW_DI_CB_IFLAG_ATTR   0x0002
+
+#define LZFW_DI_CB_OFLAG_NONE        0x0000
+#define LZFW_DI_CB_OFLAG_INVALIDATE  0x0001 /* iteration invalidated */
+
+typedef struct dir_iter_cb_context
+{
+  dirent64_t *dirent;
+  vattr_t *vattr;
+  uint64_t gen;
+  uint32_t iflags; /* caller flags */
+  uint32_t oflags; /* called-function flags */
+} dir_iter_cb_context_t;
+
+#define init_di_cb_context(ctx) \
+  do {					       \
+    (ctx)->vattr = NULL;                       \
+    (ctx)->iflags = LZFW_DI_CB_IFLAG_NONE;     \
+    (ctx)->oflags = LZFW_DI_CB_OFLAG_NONE;     \
+  } while (0)
+
+typedef int (*dir_iter_f)(vnode_t *, dir_iter_cb_context_t *, void *);
+
+#define LZFW_DI_FLAG_NONE     0x0000
+#define LZFW_DI_FLAG_GEN      0x0001
+#define LZFW_DI_FLAG_GETATTR  0x0002
+
+int lzfw_dir_iter(lzfw_vfs_t *vfs, creden_t *cred, lzfw_vnode_t *vnode,
+		  dir_iter_f func, void *arg, off_t *cookie, uint32_t flags);
+
+/**
  * Close the given directory
  * @param p_vfs: the virtual filesystem
  * @param p_cred: the credentials of the user
