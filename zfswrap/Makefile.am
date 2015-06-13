@@ -2,7 +2,6 @@ lib_LTLIBRARIES = libzfswrap.la
 
 library_includedir=$(includedir)
 library_include_HEADERS = libzfswrap.h \
-	portable/avl.h \
 	portable/acl.h \
 	portable/acl_impl.h \
 	portable/atomic.h \
