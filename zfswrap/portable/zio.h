@@ -29,23 +29,9 @@
 #ifndef PORTABLE_ZIO_H
 #define	PORTABLE_ZIO_H
 
-enum zio_checksum {
-	ZIO_CHECKSUM_INHERIT = 0,
-	ZIO_CHECKSUM_ON,
-	ZIO_CHECKSUM_OFF,
-	ZIO_CHECKSUM_LABEL,
-	ZIO_CHECKSUM_GANG_HEADER,
-	ZIO_CHECKSUM_ZILOG,
-	ZIO_CHECKSUM_FLETCHER_2,
-	ZIO_CHECKSUM_FLETCHER_4,
-	ZIO_CHECKSUM_SHA256,
-	ZIO_CHECKSUM_ZILOG2,
-	ZIO_CHECKSUM_FUNCTIONS
-};
+#include <zio_checksum.h>
 
-#if 0 /* XXX */
-#include <sys/zfs_context.h>
-#endif /* 0 */
+#include <zfs_context.h>
 #include <spa.h>
 #include <txg.h>
 #include <avl.h>

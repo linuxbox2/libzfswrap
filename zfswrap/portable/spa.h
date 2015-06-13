@@ -585,6 +585,9 @@ extern boolean_t spa_suspended(spa_t *spa);
 extern uint64_t spa_bootfs(spa_t *spa);
 extern uint64_t spa_delegation(spa_t *spa);
 extern objset_t *spa_meta_objset(spa_t *spa);
+
+#include <zio_checksum.h>
+
 extern enum zio_checksum spa_dedup_checksum(spa_t *spa);
 
 /* Miscellaneous support routines */

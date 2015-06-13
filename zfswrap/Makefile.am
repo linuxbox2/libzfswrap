@@ -92,6 +92,7 @@ library_include_HEADERS = libzfswrap.h \
 	portable/zfs_znode.h \
 	portable/zil.h \
 	portable/zio.h \
+	portable/zio_checksum.h \
 	portable/zio_impl.h \
 	portable/zone.h
 
