@@ -26,15 +26,13 @@
 #ifndef	_SYS_NVPAIR_H
 #define	_SYS_NVPAIR_H
 
-#include <sys/types.h>
+#include <types.h>
 #include <sys/errno.h>
 #include <stdarg.h>
 typedef va_list __va_list; /* XXX move to portable/types.h? */
-#include <types.h>
-typedef uint64_t hrtime_t; /* XXX move to portable/types.h? */
-
+#include <kern_sys_time.h>
 #if defined(_KERNEL) && !defined(_BOOT)
-#include <sys/kmem.h>
+#include <kmem.h>
 #endif
 
 #ifdef	__cplusplus

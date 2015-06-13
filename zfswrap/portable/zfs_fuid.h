@@ -29,10 +29,12 @@
 #define	PORTABLE_FS_ZFS_FUID_H
 
 #ifdef _KERNEL
+#if 0 /* XXX */
 #include <sys/kidmap.h>
 #include <sys/sid.h>
-#include <sys/dmu.h>
-#include <sys/zfs_vfsops.h>
+#endif /* 0 */
+#include <dmu.h>
+#include <zfs_vfsops.h>
 #endif
 #include <avl.h>
 #include <list.h>

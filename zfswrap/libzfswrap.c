@@ -1633,7 +1633,9 @@ int lzfw_dir_iter(lzfw_vfs_t *vfs, creden_t *cred, lzfw_vnode_t *vnode,
 {
   zfsvfs_t *zfsvfs = ((vfs_t*)vfs)->vfs_data;
   vnode_t *vno = (vnode_t*) vnode;
-  int error;
+
+  if(vno->v_type != VDIR)
+    return ENOTDIR;
 
   off_t next_entry;
   int eofp;
@@ -1642,20 +1644,22 @@ int lzfw_dir_iter(lzfw_vfs_t *vfs, creden_t *cred, lzfw_vnode_t *vnode,
     struct dirent64 dirent;
   } entry;
 
+  /* iter */
   vattr_t vattr;
+  vnode_t *d_vnode;
+  znode_t *d_znode;
   dir_iter_cb_context_t cb_ctx;
 
   iovec_t iovec;
   uio_t uio;
-
-  if(vno->v_type != VDIR)
-    return ENOTDIR;
 
   uio.uio_iov = &iovec;
   uio.uio_iovcnt = 1;
   uio.uio_segflg = UIO_SYSSPACE;
   uio.uio_fmode = 0;
   uio.uio_llimit = RLIM64_INFINITY;
+
+  int error;
 
   ZFS_ENTER(zfsvfs);
 
@@ -1677,24 +1681,41 @@ int lzfw_dir_iter(lzfw_vfs_t *vfs, creden_t *cred, lzfw_vnode_t *vnode,
     init_di_cb_context(&cb_ctx);
     cb_ctx.dirent = &entry.dirent;
 
-    if (flags & LZFW_DI_FLAG_GETATTR) {
-      cb_ctx.iflags |= LZFW_DI_CB_IFLAG_ATTR;
-      cb_ctx.vattr = &vattr;
-    }
-
-    vattr_helper(vfs, cred, &cb_ctx);
-
     if (eofp)
       cb_ctx.iflags |= LZFW_DI_CB_IFLAG_EOF;
 
-      error = func(vno, &cb_ctx, arg);
-      if (error)
-	break;
+    if (flags & LZFW_DI_FLAG_GETATTR) {
+      cb_ctx.iflags |= LZFW_DI_CB_IFLAG_ATTR;
 
-      if (cb_ctx.oflags & LZFW_DI_CB_OFLAG_INVALIDATE)
-	goto restart;
+      cb_ctx.vattr = &vattr;
+      error = zfs_zget(zfsvfs, cb_ctx.dirent->d_ino, &d_znode,
+		       B_FALSE);
+
+      cb_ctx.gen = d_znode->z_phys->zp_gen;
+      d_vnode = ZTOV(d_znode);
+
+      cb_ctx.vnode = d_vnode;
+      cb_ctx.znode = d_znode;
+
+      vattr.va_mask = AT_ALL;
+      error = VOP_GETATTR(d_znode, &vattr, 0, (cred_t*)cred,
+			  NULL);
+    } else {
+      d_vnode = NULL;
+      d_znode = NULL;
+    }
+
+    error = func(vno, &cb_ctx, arg);
+    if (error)
+      break;
+
+    if (d_vnode)
+      VN_RELE(d_vnode);
+
+    if (cb_ctx.oflags & LZFW_DI_CB_OFLAG_INVALIDATE)
+      goto restart;
  
-      next_entry = entry.dirent.d_off;    
+    next_entry = entry.dirent.d_off;    
   } while (!eofp);
 
   ZFS_EXIT(zfsvfs);

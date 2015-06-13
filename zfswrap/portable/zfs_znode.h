@@ -28,19 +28,20 @@
 #ifndef	PORTABLE_FS_ZFS_ZNODE_H
 #define	PORTABLE_FS_ZFS_ZNODE_H
 
+#include <types.h>
+#include <isa_defs.h>
+#include <types32.h>
+#include <attr.h>
+#include <list.h>
+#include <dmu.h>
+#include <vnode.h>
+
 #ifdef _KERNEL
-#include <sys/isa_defs.h>
-#include <sys/types32.h>
-#include <sys/attr.h>
-#include <sys/list.h>
-#include <sys/dmu.h>
-#include <sys/zfs_vfsops.h>
-#include <sys/rrwlock.h>
+#include <zfs_vfsops.h>
+#include <rrwlock.h>
 #endif
 #include <zfs_acl.h>
-#if 0 /* XXX not needed yet */
-#include <sys/zil.h>
-#endif /* 0 */
+#include <zil.h>
 
 #ifdef	__cplusplus
 extern "C" {
@@ -186,7 +187,7 @@ typedef struct znode_phys {
  * They are used to protect creates, deletes, and renames.
  * Each directory znode has a mutex and a list of locked names.
  */
-#ifdef _KERNEL
+#if defined(_KERNEL) || 1
 typedef struct zfs_dirlock {
 	char		*dl_name;	/* directory entry being locked */
 	uint32_t	dl_sharecnt;	/* 0 if exclusive, > 0 if shared */

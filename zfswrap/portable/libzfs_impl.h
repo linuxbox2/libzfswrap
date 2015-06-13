@@ -46,10 +46,12 @@
 extern "C" {
 #endif
 
+#if 0 /* XXX hackery with VERIFY and verify macros */
 #ifdef	VERIFY
 #undef	VERIFY
 #endif
 #define	VERIFY	verify
+#endif
 
 typedef struct libzfs_fru {
 	char *zf_device;

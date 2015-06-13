@@ -24,10 +24,12 @@
  * Use is subject to license terms.
  */
 
-#ifndef	_SYS_FS_ZFS_H
-#define	_SYS_FS_ZFS_H
+#if !defined(_SYS_FS_ZFS_H)
 
-#include <sys/time.h>
+#ifndef	PORTABLE_FS_ZFS_H
+#define	PORTABLE_FS_ZFS_H
+
+#include <kern_sys_time.h>
 
 #ifdef	__cplusplus
 extern "C" {
@@ -848,4 +850,5 @@ typedef enum history_internal_events {
 }
 #endif
 
-#endif	/* _SYS_FS_ZFS_H */
+#endif	/* PORTABLE_FS_ZFS_H */
+#endif  /* !defined(_SYS_FS_ZFS_H) */

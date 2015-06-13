@@ -1,9 +1,15 @@
 #ifndef LIBZFSWRAP_H
 #define LIBZFSWRAP_H
 
+#if !defined(__USE_LARGEFILE64)
+#define __USE_LARGEFILE64 1 /* rlim64_t */
+#endif
+
+#define _KERNEL 1 /* XXX advisedly */
+
 #include <stdint.h>
-#include <sys/stat.h>
-#include <sys/statvfs.h>
+#include <stat.h>
+#include <statvfs.h>
 #include <sys/uio.h>
 #include <libzfs.h>
 #include <libzfs_impl.h>
@@ -581,6 +587,8 @@ typedef struct dir_iter_cb_context
 {
   dirent64_t *dirent;
   vattr_t *vattr;
+  vnode_t *vnode;
+  znode_t *znode;
   uint64_t gen;
   uint32_t iflags; /* caller flags */
   uint32_t oflags; /* called-function flags */
@@ -589,6 +597,8 @@ typedef struct dir_iter_cb_context
 #define init_di_cb_context(ctx) \
   do {					       \
     (ctx)->vattr = NULL;                       \
+    (ctx)->vnode = NULL;                       \
+    (ctx)->znode = NULL;                       \
     (ctx)->iflags = LZFW_DI_CB_IFLAG_NONE;     \
     (ctx)->oflags = LZFW_DI_CB_OFLAG_NONE;     \
   } while (0)

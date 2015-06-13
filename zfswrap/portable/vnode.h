@@ -30,10 +30,6 @@
 #ifndef PORTABLE_VNODE_H
 #define PORTABLE_VNODE_H
 
-#if !defined(__USE_LARGEFILE64)
-#define __USE_LARGEFILE64 1 /* rlim64_t */
-#endif
-
 #include <types.h>
 #include <rwstlock.h>
 #include <cred.h>

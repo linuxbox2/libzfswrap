@@ -3,39 +3,98 @@ lib_LTLIBRARIES = libzfswrap.la
 library_includedir=$(includedir)
 library_include_HEADERS = libzfswrap.h \
 	portable/avl.h \
-	portable/avl_impl.h \
-	portable/nvpair.h \
-	portable/dmu.h \
-	portable/libuutil.h \
-	portable/portable_dirent.h \
-	portable/vnode.h \
-	portable/cred.h \
-	portable/feature_tests.h \
-	portable/isa_defs.h \
-	portable/kmem.h \
-	portable/mutex.h \
-	portable/portable_thread.h \
-	portable/rwstlock.h \
-	portable/rwlock.h \
-	portable/seg_enum.h \
-	portable/stat.h \
-	portable/taskq.h \
-	portable/types.h \
-	portable/types32.h \
-	portable/int_types.h \
-	portable/uio.h \
-	portable/umem.h \
-	portable/vmem.h \
-	portable/zfs_znode.h \
-	portable/zfs_fuid.h \
-	portable/zfs_acl.h \
 	portable/acl.h \
 	portable/acl_impl.h \
+	portable/atomic.h \
+	portable/attr.h \
+	portable/avl.h \
+	portable/avl_impl.h \
+	portable/bitmap.h \
+	portable/bootstat.h \
+	portable/buf.h \
+	portable/byteorder.h \
+	portable/cmn_err.h \
+	portable/condvar.h \
+	portable/conf.h \
+	portable/cpuvar.h \
+	portable/cred.h \
+	portable/dditypes.h \
+	portable/ddt.h \
+	portable/debug.h \
+	portable/disp.h \
+	portable/dmu.h \
+	portable/dmu_zfetch.h \
+	portable/dnode.h \
+	portable/dsl_deleg.h \
+	portable/dsl_pool.h \
+	portable/feature_tests.h \
+	portable/file_aux.h \
+	portable/file.h \
+	portable/fm_util.h \
+	portable/int_types.h \
+	portable/isa_defs.h \
+	portable/kern_sys_time.h \
+	portable/kmem.h \
+	portable/kobj.h \
+	portable/libuutil.h \
+	portable/libzfs.h \
+	portable/libzfs_impl.h \
 	portable/list.h \
 	portable/list_impl.h \
+	portable/machlock.h \
+	portable/mutex.h \
+	portable/note.h \
+	portable/nvpair.h \
+	portable/param_aux.h \
+	portable/param.h \
+	portable/portable_dirent.h \
+	portable/portable_ioctl.h \
+	portable/portable_thread.h \
+	portable/proc.h \
+	portable/random.h \
+	portable/rctl.h \
+	portable/refcount.h \
+	portable/refstr.h \
+	portable/rrwlock.h \
+	portable/rwlock.h \
+	portable/rwstlock.h \
+	portable/sdt.h \
+	portable/seg_enum.h \
+	portable/seg_kmem.h \
+	portable/semaphore.h \
+	portable/spa.h \
+	portable/stat.h \
+	portable/statvfs.h \
+	portable/sunddi.h \
+	portable/sysevent_eventdefs.h \
+	portable/sysevent.h \
+	portable/sysmacros.h \
+	portable/systm.h \
+	portable/taskq.h \
+	portable/time_aux.h \
+	portable/t_lock.h \
+	portable/txg.h \
+	portable/txg_impl.h \
+	portable/types32.h \
+	portable/types.h \
+	portable/u8_textprep.h \
+	portable/uio.h \
+	portable/umem.h \
+	portable/user.h \
+	portable/vfs.h \
+	portable/vmem.h \
+	portable/vnode.h \
+	portable/zfs_acl.h \
+	portable/zfs_context.h \
+	portable/zfs_debug.h \
+	portable/zfs_fuid.h \
 	portable/zfs.h \
-	portable/libzfs.h \
-	portable/libzfs_impl.h
+	portable/zfs_vfsops.h \
+	portable/zfs_znode.h \
+	portable/zil.h \
+	portable/zio.h \
+	portable/zio_impl.h \
+	portable/zone.h
 
 libzfswrap_la_SOURCES = ptrace.c zfs_acl.c zfs_dir.c zfs_ioctl.c zfs_log.c zfs_replay.c zfs_rlock.c zfs_vfsops.c zfs_vnops.c zvol.c zfsfuse_socket.c libzfswrap_utils.c libzfswrap.c
 libzfswrap_la_LIBADD = ${top_builddir}/lib/libatomic/libatomic.la \

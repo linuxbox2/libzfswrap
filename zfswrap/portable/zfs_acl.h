@@ -29,8 +29,8 @@
 #define	PORTABLE_FS_ZFS_ACL_H
 
 #ifdef _KERNEL
-#include <sys/isa_defs.h>
-#include <sys/types32.h>
+#include <isa_defs.h>
+#include <types32.h>
 #endif
 #include <acl.h>
 #include <dmu.h>
