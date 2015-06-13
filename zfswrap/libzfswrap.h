@@ -51,7 +51,7 @@ typedef struct
 /** libzfswrap library handle */
 typedef struct libzfs_handle lzfw_handle_t;
 /** Virtual file system handle */
-typedef struct vfs_t lzfw_vfs_t;
+typedef struct lzfw_vfs_t lzfw_vfs_t;
 /** Virtual node handle */
 typedef struct lzfw_vnode_t lzfw_vnode_t;
 
