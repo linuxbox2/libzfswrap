@@ -26,7 +26,9 @@
 
 extern int zfs_vfsinit(int fstype, char *name);
 
-static int getattr_helper(lzfw_vfs_t *p_vfs, creden_t *p_cred, inogen_t object, struct stat *p_stat, uint64_t *p_gen, int *p_type);
+static int getattr_helper(lzfw_vfs_t *p_vfs, creden_t *p_cred,
+			  inogen_t object, struct stat *p_stat,
+			  uint64_t *p_gen, int *p_type);
 
 /**
  * Initialize the libzfswrap library
@@ -67,7 +69,9 @@ void lzfw_exit(lzfw_handle_t *p_zhd)
  * @param ppsz_error: the error message (if any)
  * @return 0 on success, the error code otherwise
  */
-int lzfw_zpool_create(lzfw_handle_t *p_zhd, const char *psz_name, const char *psz_type, const char **ppsz_dev, size_t i_dev, const char **ppsz_error)
+int lzfw_zpool_create(lzfw_handle_t *p_zhd, const char *psz_name,
+		      const char *psz_type, const char **ppsz_dev,
+		      size_t i_dev, const char **ppsz_error)
 {
   int i_error;
   nvlist_t *pnv_root    = NULL;
@@ -100,7 +104,8 @@ int lzfw_zpool_create(lzfw_handle_t *p_zhd, const char *psz_name, const char *ps
  * @param ppsz_error: the error message (if any)
  * @return 0 in case of success, the error code otherwise
  */
-int lzfw_zpool_destroy(lzfw_handle_t *p_zhd, const char *psz_name, int b_force, const char **ppsz_error)
+int lzfw_zpool_destroy(lzfw_handle_t *p_zhd, const char *psz_name,
+		       int b_force, const char **ppsz_error)
 {
   zpool_handle_t *p_zpool;
   int i_error;
@@ -130,7 +135,9 @@ int lzfw_zpool_destroy(lzfw_handle_t *p_zhd, const char *psz_name, int b_force, 
  * @param ppsz_error: the error message if any
  * @return 0 in case of success, the error code otherwise
  */
-int lzfw_zpool_add(lzfw_handle_t *p_zhd, const char *psz_zpool, const char *psz_type, const char **ppsz_dev, size_t i_dev, const char **ppsz_error)
+int lzfw_zpool_add(lzfw_handle_t *p_zhd, const char *psz_zpool,
+		   const char *psz_type, const char **ppsz_dev,
+		   size_t i_dev, const char **ppsz_error)
 {
   zpool_handle_t *p_zpool;
   nvlist_t *pnv_root;
@@ -162,7 +169,9 @@ int lzfw_zpool_add(lzfw_handle_t *p_zhd, const char *psz_zpool, const char *psz_
  * @param ppsz_error: the error message if any
  * @return 0 in case of success, the error code otherwise
  */
-int lzfw_zpool_remove(lzfw_handle_t *p_zhd, const char *psz_zpool, const char **ppsz_dev, size_t i_vdevs, const char **ppsz_error)
+int lzfw_zpool_remove(lzfw_handle_t *p_zhd, const char *psz_zpool,
+		      const char **ppsz_dev, size_t i_vdevs,
+		      const char **ppsz_error)
 {
   zpool_handle_t *p_zpool;
   size_t i;
@@ -192,7 +201,10 @@ int lzfw_zpool_remove(lzfw_handle_t *p_zhd, const char *psz_zpool, const char **
  * @param ppsz_error: the error message if any
  * @return 0 in case of success, the error code otherwise
  */
-int lzfw_zpool_attach(lzfw_handle_t *p_zhd, const char *psz_zpool, const char *psz_current_dev, const char *psz_new_dev, int i_replacing, const char **ppsz_error)
+int lzfw_zpool_attach(lzfw_handle_t *p_zhd, const char *psz_zpool,
+		      const char *psz_current_dev,
+		      const char *psz_new_dev, int i_replacing,
+		      const char **ppsz_error)
 {
   zpool_handle_t *p_zpool;
   nvlist_t *pnv_root;
@@ -223,7 +235,8 @@ int lzfw_zpool_attach(lzfw_handle_t *p_zhd, const char *psz_zpool, const char *p
  * @param ppsz_error: the error message if any
  * @return 0 in case of success, the error code otherwise
  */
-int lzfw_zpool_detach(lzfw_handle_t *p_zhd, const char *psz_zpool, const char *psz_dev, const char **ppsz_error)
+int lzfw_zpool_detach(lzfw_handle_t *p_zhd, const char *psz_zpool,
+		      const char *psz_dev, const char **ppsz_error)
 {
   zpool_handle_t *p_zpool;
   int i_error;
@@ -243,7 +256,8 @@ int lzfw_zpool_detach(lzfw_handle_t *p_zhd, const char *psz_zpool, const char *p
  * @param p_data: a obscure data pointer (the zpool property list)
  * @return 0
  */
-static int lzfw_zpool_list_callback(zpool_handle_t *p_zpool, void *p_data)
+static int lzfw_zpool_list_callback(zpool_handle_t *p_zpool,
+				    void *p_data)
 {
   zprop_list_t *p_zpl = (zprop_list_t*)p_data;
   char property[ZPOOL_MAXPROPLEN];
@@ -289,7 +303,8 @@ static int lzfw_zpool_list_callback(zpool_handle_t *p_zpool, void *p_data)
  * @param ppsz_error: the error message if any
  * @return 0 in case of success, the error code otherwise
  */
-int lzfw_zpool_list(lzfw_handle_t *p_zhd, const char *psz_props, const char **ppsz_error)
+int lzfw_zpool_list(lzfw_handle_t *p_zhd, const char *psz_props,
+		    const char **ppsz_error)
 {
   zprop_list_t *p_zprop_list = NULL;
   static char psz_default_props[] = "name,size,allocated,free,capacity,dedupratio,health,altroot";
@@ -676,7 +691,8 @@ static int lzfw_zfs_list_callback(zfs_handle_t *p_zfs, void *data)
  * @param ppsz_error: the error message if any
  * @return 0 in case of success, the error code otherwise
  */
-int lzfw_zfs_list(lzfw_handle_t *p_zhd, const char *psz_props, const char **ppsz_error)
+int lzfw_zfs_list(lzfw_handle_t *p_zhd, const char *psz_props,
+		  const char **ppsz_error)
 {
   zprop_list_t *p_zprop_list = NULL;
   static char psz_default_props[] = "name,used,available,referenced,mountpoint";
@@ -771,7 +787,9 @@ int lzfw_datasets_iter(libzfs_handle_t *zhd, const char *parent_ds_name,
  * @param ppsz_error: the error message if any
  * @return 0 in case of success, the error code otherwise
  */
-int lzfw_zfs_snapshot(lzfw_handle_t *p_zhd, const char *psz_zfs, const char *psz_snapshot, const char **ppsz_error)
+int lzfw_zfs_snapshot(lzfw_handle_t *p_zhd, const char *psz_zfs,
+		      const char *psz_snapshot,
+		      const char **ppsz_error)
 {
   zfs_handle_t *p_zfs;
   int i_error;
@@ -796,7 +814,10 @@ int lzfw_zfs_snapshot(lzfw_handle_t *p_zhd, const char *psz_zfs, const char *psz
  * @param ppsz_error: the error message if any
  * @return 0 in case of success, the error code otherwise
  */
-int lzfw_zfs_snapshot_destroy(lzfw_handle_t *p_zhd, const char *psz_zfs, const char *psz_snapshot, const char **ppsz_error)
+int lzfw_zfs_snapshot_destroy(lzfw_handle_t *p_zhd,
+			      const char *psz_zfs,
+			      const char *psz_snapshot,
+			      const char **ppsz_error)
 {
   zpool_handle_t *p_zpool;
   int i_error;
@@ -921,7 +942,8 @@ int lzfw_dataset_destroy(lzfw_handle_t *p_zhd, const char *psz_zfs,
  * @param ppsz_error: the error message if any
  * @return 0 in case of success, the error code otherwise
  */
-int lzfw_zfs_list_snapshot(lzfw_handle_t *p_zhd, const char *psz_zfs, const char **ppsz_error)
+int lzfw_zfs_list_snapshot(lzfw_handle_t *p_zhd, const char *psz_zfs,
+			   const char **ppsz_error)
 {
   zprop_list_t *p_zprop_list = NULL;
   static char psz_default_props[] = "name,used,available,referenced,mountpoint";
@@ -942,7 +964,8 @@ typedef struct
   size_t i_num;
 }callback_data_t;
 
-static int lzfw_zfs_get_list_snapshots_callback(zfs_handle_t *p_zfs, void *data)
+static int lzfw_zfs_get_list_snapshots_callback(zfs_handle_t *p_zfs,
+						void *data)
 {
   callback_data_t *p_cb = (callback_data_t*)data;
   p_cb->i_num++;
@@ -959,7 +982,10 @@ static int lzfw_zfs_get_list_snapshots_callback(zfs_handle_t *p_zfs, void *data)
  * @param ppsz_error: the error message if any
  * @return the number of snapshots in case of success, -1 otherwise
  */
-int lzfw_zfs_get_list_snapshots(lzfw_handle_t *p_zhd, const char *psz_zfs, char ***pppsz_snapshots, const char **ppsz_error)
+int lzfw_zfs_get_list_snapshots(lzfw_handle_t *p_zhd,
+				const char *psz_zfs,
+				char ***pppsz_snapshots,
+				const char **ppsz_error)
 {
   callback_data_t cb = { .ppsz_names = NULL, .i_num = 0 };
   if(libzfs_zfs_snapshot_iter((libzfs_handle_t*)p_zhd, psz_zfs,
@@ -979,7 +1005,8 @@ extern vfsops_t *zfs_vfsops;
  * @param psz_options: options for the mounting point
  * @return the vitual file system
  */
-lzfw_vfs_t *lzfw_mount(const char *psz_zpool, const char *psz_dir, const char *psz_options)
+lzfw_vfs_t *lzfw_mount(const char *psz_zpool, const char *psz_dir,
+		       const char *psz_options)
 {
   vfs_t *p_vfs = calloc(1, sizeof(vfs_t));
   if(!p_vfs)
@@ -1058,10 +1085,8 @@ int lzfw_umount(lzfw_vfs_t *p_vfs, int b_force)
   return 0;
 }
 
-
-
 /**
- * Get some more informations about the file system
+ * Get some more information about the file system
  * @param p_vfs: the virtual file system
  * @param p_stats: the statistics
  * @return 0 in case of success, -1 otherwise
@@ -1099,7 +1124,8 @@ int lzfw_statfs(lzfw_vfs_t *p_vfs, struct statvfs *p_statvfs)
  * @param p_type: return the object type
  * @return 0 in case of success, the error code otherwise
  */
-int lzfw_lookup(lzfw_vfs_t *p_vfs, creden_t *p_cred, inogen_t parent, const char *psz_name, inogen_t *p_object, int *p_type)
+int lzfw_lookup(lzfw_vfs_t *p_vfs, creden_t *p_cred, inogen_t parent,
+		const char *psz_name, inogen_t *p_object, int *p_type)
 {
   if(strlen(psz_name) >= MAXNAMELEN)
     return -1;
@@ -1195,7 +1221,8 @@ int lzfw_lookupnameat(lzfw_vfs_t *p_vfs, creden_t *p_cred,
  * @param mask: the rights to check
  * @return 0 in case of success, the error code otherwise
  */
-int lzfw_access(lzfw_vfs_t *p_vfs, creden_t *p_cred, inogen_t object, int mask)
+int lzfw_access(lzfw_vfs_t *p_vfs, creden_t *p_cred, inogen_t object,
+		int mask)
 {
   zfsvfs_t *p_zfsvfs = ((vfs_t*)p_vfs)->vfs_data;
   znode_t *p_znode;
@@ -1244,7 +1271,8 @@ int lzfw_access(lzfw_vfs_t *p_vfs, creden_t *p_cred, inogen_t object, int mask)
  * @param pp_vnode: the virtual node
  * @return 0 in case of success, the error code otherwise
  */
-int lzfw_open(lzfw_vfs_t *p_vfs, creden_t *p_cred, inogen_t object, int i_flags, lzfw_vnode_t **pp_vnode)
+int lzfw_open(lzfw_vfs_t *p_vfs, creden_t *p_cred, inogen_t object,
+	      int i_flags, lzfw_vnode_t **pp_vnode)
 {
   zfsvfs_t *p_zfsvfs = ((vfs_t*)p_vfs)->vfs_data;
   int mode = 0, flags = 0, i_error;
@@ -1370,7 +1398,9 @@ int lzfw_openat(lzfw_vfs_t *p_vfs, creden_t *p_cred,
  * @param p_file: return the file
  * @return 0 in case of success the error code otherwise
  */
-int lzfw_create(lzfw_vfs_t *p_vfs, creden_t *p_cred, inogen_t parent, const char *psz_filename, mode_t mode, inogen_t *p_file)
+int lzfw_create(lzfw_vfs_t *p_vfs, creden_t *p_cred, inogen_t parent,
+		const char *psz_filename, mode_t mode,
+		inogen_t *p_file)
 {
   zfsvfs_t *p_zfsvfs = ((vfs_t*)p_vfs)->vfs_data;
   int i_error;
@@ -1471,7 +1501,8 @@ int lzfw_createat(lzfw_vfs_t *vfs, creden_t *cred,
  * @param pp_vnode: the vnode to return
  * @return 0 on success, the error code otherwise
  */
-int lzfw_opendir(lzfw_vfs_t *p_vfs, creden_t *p_cred, inogen_t directory, lzfw_vnode_t **pp_vnode)
+int lzfw_opendir(lzfw_vfs_t *p_vfs, creden_t *p_cred,
+		 inogen_t directory, lzfw_vnode_t **pp_vnode)
 {
   zfsvfs_t *p_zfsvfs = ((vfs_t*)p_vfs)->vfs_data;
   int i_error;
@@ -1527,7 +1558,9 @@ int lzfw_opendir(lzfw_vfs_t *p_vfs, creden_t *p_cred, inogen_t directory, lzfw_v
  * @param cookie: the offset to read in the directory
  * @return 0 on success, the error code otherwise
  */
-int lzfw_readdir(lzfw_vfs_t *p_vfs, creden_t *p_cred, lzfw_vnode_t *p_vnode, lzfw_entry_t *p_entries, size_t size, off_t *cookie)
+int lzfw_readdir(lzfw_vfs_t *p_vfs, creden_t *p_cred,
+		 lzfw_vnode_t *p_vnode, lzfw_entry_t *p_entries,
+		 size_t size, off_t *cookie)
 {
   zfsvfs_t *p_zfsvfs = ((vfs_t*)p_vfs)->vfs_data;
 
@@ -1602,7 +1635,8 @@ int lzfw_readdir(lzfw_vfs_t *p_vfs, creden_t *p_cred, lzfw_vnode_t *p_vnode, lzf
  */
 
 static inline
-int vattr_helper(vfs_t *vfs, creden_t *cred, dir_iter_cb_context_t *cb_ctx)
+int vattr_helper(vfs_t *vfs, creden_t *cred,
+		 dir_iter_cb_context_t *cb_ctx)
 {
   zfsvfs_t *zfsvfs = ((vfs_t*)vfs)->vfs_data;
   znode_t *znode;
@@ -1629,7 +1663,8 @@ int vattr_helper(vfs_t *vfs, creden_t *cred, dir_iter_cb_context_t *cb_ctx)
 }
 
 int lzfw_dir_iter(lzfw_vfs_t *vfs, creden_t *cred, lzfw_vnode_t *vnode,
-		  dir_iter_f func, void *arg, off_t *cookie, uint32_t flags)
+		  dir_iter_f func, void *arg, off_t *cookie,
+		  uint32_t flags)
 {
   zfsvfs_t *zfsvfs = ((vfs_t*)vfs)->vfs_data;
   vnode_t *vno = (vnode_t*) vnode;
@@ -1735,7 +1770,8 @@ int lzfw_dir_iter(lzfw_vfs_t *vfs, creden_t *cred, lzfw_vnode_t *vnode,
  * @param p_vnode: the vnode
  * @return 0 on success, the error code otherwise
  */
-int lzfw_closedir(lzfw_vfs_t *p_vfs, creden_t *p_cred, lzfw_vnode_t *p_vnode)
+int lzfw_closedir(lzfw_vfs_t *p_vfs, creden_t *p_cred,
+		  lzfw_vnode_t *p_vnode)
 {
   return lzfw_close(p_vfs, p_cred, p_vnode, O_RDONLY);
 }
@@ -1748,7 +1784,8 @@ int lzfw_closedir(lzfw_vfs_t *p_vfs, creden_t *p_cred, lzfw_vnode_t *p_vnode)
  * @param p_stat: the stat struct to fill in
  * @return 0 on success, the error code otherwise
  */
-int lzfw_stat(lzfw_vfs_t *p_vfs, creden_t *p_cred, lzfw_vnode_t *p_vnode, struct stat *p_stat)
+int lzfw_stat(lzfw_vfs_t *p_vfs, creden_t *p_cred,
+	      lzfw_vnode_t *p_vnode, struct stat *p_stat)
 {
   zfsvfs_t *p_zfsvfs = ((vfs_t*)p_vfs)->vfs_data;
   vattr_t vattr;
@@ -1778,7 +1815,9 @@ int lzfw_stat(lzfw_vfs_t *p_vfs, creden_t *p_cred, lzfw_vnode_t *p_vnode, struct
   return 0;
 }
 
-static int getattr_helper(lzfw_vfs_t *p_vfs, creden_t *p_cred, inogen_t object, struct stat *p_stat, uint64_t *p_gen, int *p_type)
+static int getattr_helper(lzfw_vfs_t *p_vfs, creden_t *p_cred,
+			  inogen_t object, struct stat *p_stat,
+			  uint64_t *p_gen, int *p_type)
 {
   zfsvfs_t *p_zfsvfs = ((vfs_t*)p_vfs)->vfs_data;
   int i_error;
@@ -1839,7 +1878,8 @@ static int getattr_helper(lzfw_vfs_t *p_vfs, creden_t *p_cred, inogen_t object, 
  * @param p_type: return the type of the object
  * @return 0 on success, the error code otherwise
  */
-int lzfw_getattr(lzfw_vfs_t *p_vfs, creden_t *p_cred, inogen_t object, struct stat *p_stat, int *p_type)
+int lzfw_getattr(lzfw_vfs_t *p_vfs, creden_t *p_cred, inogen_t object,
+		 struct stat *p_stat, int *p_type)
 {
   zfsvfs_t *p_zfsvfs = ((vfs_t*)p_vfs)->vfs_data;
   int i_error;
@@ -1860,7 +1900,9 @@ int lzfw_getattr(lzfw_vfs_t *p_vfs, creden_t *p_cred, inogen_t object, struct st
  * @param p_new_stat: new attributes of the object
  * @return 0 on success, the error code otherwise
  */
-int lzfw_setattr(lzfw_vfs_t *p_vfs, creden_t *p_cred, inogen_t object, struct stat *p_stat, int flags, struct stat *p_new_stat)
+int lzfw_setattr(lzfw_vfs_t *p_vfs, creden_t *p_cred, inogen_t object,
+		 struct stat *p_stat, int flags,
+		 struct stat *p_new_stat)
 {
   zfsvfs_t *p_zfsvfs = ((vfs_t*)p_vfs)->vfs_data;
   int i_error;
@@ -1929,7 +1971,8 @@ int lzfw_setattr(lzfw_vfs_t *p_vfs, creden_t *p_cred, inogen_t object, struct st
  * @param object: the object
  * @param
  */
-static int xattr_helper(zfsvfs_t *p_zfsvfs, creden_t *p_cred, inogen_t object, vnode_t **pp_vnode)
+static int xattr_helper(zfsvfs_t *p_zfsvfs, creden_t *p_cred,
+			inogen_t object, vnode_t **pp_vnode)
 {
   znode_t *p_znode;
   int i_error;
@@ -1974,7 +2017,8 @@ static int xattr_helper(zfsvfs_t *p_zfsvfs, creden_t *p_cred, inogen_t object, v
  * @param p_size: will contain the size of the buffer
  * @return 0 in case of success, the error code otherwise
  */
-int lzfw_listxattr(lzfw_vfs_t *p_vfs, creden_t *p_cred, inogen_t object, char **ppsz_buffer, size_t *p_size)
+int lzfw_listxattr(lzfw_vfs_t *p_vfs, creden_t *p_cred,
+		   inogen_t object, char **ppsz_buffer, size_t *p_size)
 {
   zfsvfs_t *p_zfsvfs = ((vfs_t*)p_vfs)->vfs_data;
   int i_error;
@@ -2062,7 +2106,8 @@ int lzfw_listxattr(lzfw_vfs_t *p_vfs, creden_t *p_cred, inogen_t object, char **
  * @param cb: per-key callback
  * @return 0 in case of success, the error code otherwise
  */
-int lzfw_listxattr2(lzfw_vfs_t *p_vfs, creden_t *p_cred, inogen_t object, opxattr_func cb_func, void *arg)
+int lzfw_listxattr2(lzfw_vfs_t *p_vfs, creden_t *p_cred,
+		    inogen_t object, opxattr_func cb_func, void *arg)
 {
   zfsvfs_t *p_zfsvfs = ((vfs_t*)p_vfs)->vfs_data;
   int i_error;
@@ -2139,7 +2184,6 @@ int lzfw_listxattr2(lzfw_vfs_t *p_vfs, creden_t *p_cred, inogen_t object, opxatt
   return 0;
 }
 
-
 /**
  * Add the given (key,value) to the extended attributes.
  * This function will change the value if the key already exist.
@@ -2150,7 +2194,8 @@ int lzfw_listxattr2(lzfw_vfs_t *p_vfs, creden_t *p_cred, inogen_t object, opxatt
  * @param psz_value: the value
  * @return 0 in case of success, the error code otherwise
  */
-int lzfw_setxattr(lzfw_vfs_t *p_vfs, creden_t *p_cred, inogen_t object, const char *psz_key, const char *psz_value)
+int lzfw_setxattr(lzfw_vfs_t *p_vfs, creden_t *p_cred, inogen_t object,
+		  const char *psz_key, const char *psz_value)
 {
   zfsvfs_t *p_zfsvfs = ((vfs_t*)p_vfs)->vfs_data;
   int i_error;
@@ -2219,7 +2264,9 @@ int lzfw_setxattr(lzfw_vfs_t *p_vfs, creden_t *p_cred, inogen_t object, const ch
  * @param psz_value: the value
  * @return 0 in case of success, the error code otherwise
  */
-int lzfw_setxattrat(lzfw_vfs_t *p_vfs, creden_t *p_cred, lzfw_vnode_t *object, const char *psz_key, const char *psz_value)
+int lzfw_setxattrat(lzfw_vfs_t *p_vfs, creden_t *p_cred,
+		    lzfw_vnode_t *object, const char *psz_key,
+		    const char *psz_value)
 {
   zfsvfs_t *p_zfsvfs = ((vfs_t*)p_vfs)->vfs_data;
   vnode_t *p_vnode = (vnode_t*) object;
@@ -2293,7 +2340,9 @@ int lzfw_setxattrat(lzfw_vfs_t *p_vfs, creden_t *p_cred, lzfw_vnode_t *object, c
  * @param ppsz_value: the value
  * @return 0 in case of success, the error code otherwise
  */
-int lzfw_getxattr(lzfw_vfs_t *p_vfs, creden_t *p_cred, inogen_t object, const char *psz_key, char **ppsz_value)
+int lzfw_getxattr(lzfw_vfs_t *p_vfs, creden_t *p_cred,
+		  inogen_t object, const char *psz_key,
+		  char **ppsz_value)
 {
   zfsvfs_t *p_zfsvfs = ((vfs_t*)p_vfs)->vfs_data;
   int i_error;
@@ -2377,8 +2426,9 @@ int lzfw_getxattr(lzfw_vfs_t *p_vfs, creden_t *p_cred, inogen_t object, const ch
  * @param size: on entry, max size of value; on exit, bytes written into value
  * @return 0 in case of success, the error code otherwise
  */
-int lzfw_getxattrat(lzfw_vfs_t *p_vfs, creden_t *p_cred, lzfw_vnode_t *object,
-		    const char *psz_key, char *value, size_t *size)
+int lzfw_getxattrat(lzfw_vfs_t *p_vfs, creden_t *p_cred,
+		    lzfw_vnode_t *object, const char *psz_key,
+		    char *value, size_t *size)
 {
   zfsvfs_t *p_zfsvfs = ((vfs_t*)p_vfs)->vfs_data;
   vnode_t *p_vnode = (vnode_t*) object;
@@ -2460,7 +2510,8 @@ int lzfw_getxattrat(lzfw_vfs_t *p_vfs, creden_t *p_cred, lzfw_vnode_t *object,
  * @param psz_key: the key
  * @return 0 in case of success, the error code otherwise
  */
-int lzfw_removexattr(lzfw_vfs_t *p_vfs, creden_t *p_cred, inogen_t object, const char *psz_key)
+int lzfw_removexattr(lzfw_vfs_t *p_vfs, creden_t *p_cred,
+		     inogen_t object, const char *psz_key)
 {
   zfsvfs_t *p_zfsvfs = ((vfs_t*)p_vfs)->vfs_data;
   int i_error;
@@ -2491,7 +2542,9 @@ int lzfw_removexattr(lzfw_vfs_t *p_vfs, creden_t *p_cred, inogen_t object, const
  * @param offset: the offset to read
  * @return bytes read if successful, -error code otherwise (?)
  */
-ssize_t lzfw_read(lzfw_vfs_t *p_vfs, creden_t *p_cred, lzfw_vnode_t *p_vnode, void *p_buffer, size_t size, int behind, off_t offset)
+ssize_t lzfw_read(lzfw_vfs_t *p_vfs, creden_t *p_cred,
+		  lzfw_vnode_t *p_vnode, void *p_buffer, size_t size,
+		  int behind, off_t offset)
 {
   zfsvfs_t *p_zfsvfs = ((vfs_t*)p_vfs)->vfs_data;
   iovec_t iovec;
@@ -2578,7 +2631,9 @@ ssize_t lzfw_preadv(lzfw_vfs_t *p_vfs, creden_t *cred,
  * @param offset: the offset to write
  * @return bytes written if successful, -error code otherwise (?)
  */
-ssize_t lzfw_write(lzfw_vfs_t *p_vfs, creden_t *p_cred, lzfw_vnode_t *p_vnode, void *p_buffer, size_t size, int behind, off_t offset)
+ssize_t lzfw_write(lzfw_vfs_t *p_vfs, creden_t *p_cred,
+		   lzfw_vnode_t *p_vnode, void *p_buffer, size_t size,
+		   int behind, off_t offset)
 {
   zfsvfs_t *p_zfsvfs = ((vfs_t*)p_vfs)->vfs_data;
   iovec_t iovec;
@@ -2658,7 +2713,8 @@ ssize_t lzfw_pwritev(lzfw_vfs_t *p_vfs, creden_t *cred,
  * @param i_flags: the flags given when opening
  * @return 0 in case of success, the error code otherwise
  */
-int lzfw_close(lzfw_vfs_t *p_vfs, creden_t *p_cred, lzfw_vnode_t *p_vnode, int i_flags)
+int lzfw_close(lzfw_vfs_t *p_vfs, creden_t *p_cred,
+	       lzfw_vnode_t *p_vnode, int i_flags)
 {
   zfsvfs_t *p_zfsvfs = ((vfs_t*)p_vfs)->vfs_data;
 
@@ -2682,7 +2738,9 @@ int lzfw_close(lzfw_vfs_t *p_vfs, creden_t *p_cred, lzfw_vnode_t *p_vnode, int i
  * @param p_directory: return the new directory
  * @return 0 on success, the error code otherwise
  */
-int lzfw_mkdir(lzfw_vfs_t *p_vfs, creden_t *p_cred, inogen_t parent, const char *psz_name, mode_t mode, inogen_t *p_directory)
+int lzfw_mkdir(lzfw_vfs_t *p_vfs, creden_t *p_cred, inogen_t parent,
+	       const char *psz_name, mode_t mode,
+	       inogen_t *p_directory)
 {
   zfsvfs_t *p_zfsvfs = ((vfs_t*)p_vfs)->vfs_data;
   int i_error;
@@ -2739,7 +2797,9 @@ int lzfw_mkdir(lzfw_vfs_t *p_vfs, creden_t *p_cred, inogen_t parent, const char 
  * @param p_directory: return the new directory
  * @return 0 on success, the error code otherwise
  */
-int lzfw_mkdirat(lzfw_vfs_t *p_vfs, creden_t *p_cred, lzfw_vnode_t *parent, const char *psz_name, mode_t mode, inogen_t *p_directory)
+int lzfw_mkdirat(lzfw_vfs_t *p_vfs, creden_t *p_cred,
+		 lzfw_vnode_t *parent, const char *psz_name,
+		 mode_t mode, inogen_t *p_directory)
 {
   zfsvfs_t *p_zfsvfs = ((vfs_t*)p_vfs)->vfs_data;
   int i_error;
@@ -2780,7 +2840,8 @@ int lzfw_mkdirat(lzfw_vfs_t *p_vfs, creden_t *p_cred, lzfw_vnode_t *parent, cons
  * @param psz_filename: name of the file to unlink
  * @return 0 on success, the error code otherwise
  */
-int lzfw_rmdir(lzfw_vfs_t *p_vfs, creden_t *p_cred, inogen_t parent, const char *psz_filename)
+int lzfw_rmdir(lzfw_vfs_t *p_vfs, creden_t *p_cred, inogen_t parent,
+	       const char *psz_filename)
 {
   zfsvfs_t *p_zfsvfs = ((vfs_t*)p_vfs)->vfs_data;
   int i_error;
@@ -2822,7 +2883,9 @@ int lzfw_rmdir(lzfw_vfs_t *p_vfs, creden_t *p_cred, inogen_t parent, const char 
  * @param p_symlink: the new symlink
  * @return 0 on success, the error code otherwise
  */
-int lzfw_symlink(lzfw_vfs_t *p_vfs, creden_t *p_cred, inogen_t parent, const char *psz_name, const char *psz_link, inogen_t *p_symlink)
+int lzfw_symlink(lzfw_vfs_t *p_vfs, creden_t *p_cred, inogen_t parent,
+		 const char *psz_name, const char *psz_link,
+		 inogen_t *p_symlink)
 {
   zfsvfs_t *p_zfsvfs = ((vfs_t*)p_vfs)->vfs_data;
   int i_error;
@@ -2885,7 +2948,9 @@ int lzfw_symlink(lzfw_vfs_t *p_vfs, creden_t *p_cred, inogen_t parent, const cha
  * @param content_size: size of the buffer
  * @return 0 on success, the error code otherwise
  */
-int lzfw_readlink(lzfw_vfs_t *p_vfs, creden_t *p_cred, inogen_t symlink, char *psz_content, size_t content_size)
+int lzfw_readlink(lzfw_vfs_t *p_vfs, creden_t *p_cred,
+		  inogen_t symlink, char *psz_content,
+		  size_t content_size)
 {
   zfsvfs_t *p_zfsvfs = ((vfs_t*)p_vfs)->vfs_data;
   int i_error;
@@ -2943,7 +3008,8 @@ int lzfw_readlink(lzfw_vfs_t *p_vfs, creden_t *p_cred, inogen_t symlink, char *p
  * @param psz_name: name of the link
  * @return 0 on success, the error code otherwise
  */
-int lzfw_link(lzfw_vfs_t *p_vfs, creden_t *p_cred, inogen_t parent, inogen_t target, const char *psz_name)
+int lzfw_link(lzfw_vfs_t *p_vfs, creden_t *p_cred, inogen_t parent,
+	      inogen_t target, const char *psz_name)
 {
   zfsvfs_t *p_zfsvfs = ((vfs_t*)p_vfs)->vfs_data;
   int i_error;
@@ -2999,7 +3065,8 @@ int lzfw_link(lzfw_vfs_t *p_vfs, creden_t *p_cred, inogen_t parent, inogen_t tar
  * @param psz_filename: name of the file to unlink
  * @return 0 on success, the error code otherwise
  */
-int lzfw_unlink(lzfw_vfs_t *p_vfs, creden_t *p_cred, inogen_t parent, const char *psz_filename)
+int lzfw_unlink(lzfw_vfs_t *p_vfs, creden_t *p_cred, inogen_t parent,
+		const char *psz_filename)
 {
   zfsvfs_t *p_zfsvfs = ((vfs_t*)p_vfs)->vfs_data;
   int i_error;
@@ -3040,7 +3107,9 @@ int lzfw_unlink(lzfw_vfs_t *p_vfs, creden_t *p_cred, inogen_t parent, const char
  * @param flags: flags
  * @return 0 on success, the error code otherwise
  */
-int lzfw_unlinkat(lzfw_vfs_t *p_vfs, creden_t *p_cred, lzfw_vnode_t* parent, const char *psz_filename, int flags)
+int lzfw_unlinkat(lzfw_vfs_t *p_vfs, creden_t *p_cred,
+		  lzfw_vnode_t* parent, const char *psz_filename,
+		  int flags)
 {
   zfsvfs_t *p_zfsvfs = ((vfs_t*)p_vfs)->vfs_data;
   vnode_t *p_parent_vnode = (vnode_t*) parent;
@@ -3068,7 +3137,9 @@ int lzfw_unlinkat(lzfw_vfs_t *p_vfs, creden_t *p_cred, lzfw_vnode_t* parent, con
  * @param psz_new_filename: new file name
  * @return 0 on success, the error code otherwise
  */
-int lzfw_rename(lzfw_vfs_t *p_vfs, creden_t *p_cred, inogen_t parent, const char *psz_filename, inogen_t new_parent, const char *psz_new_filename)
+int lzfw_rename(lzfw_vfs_t *p_vfs, creden_t *p_cred, inogen_t parent,
+		const char *psz_filename, inogen_t new_parent,
+		const char *psz_new_filename)
 {
   zfsvfs_t *p_zfsvfs = ((vfs_t*)p_vfs)->vfs_data;
   znode_t *p_parent_znode, *p_new_parent_znode;
@@ -3105,7 +3176,6 @@ int lzfw_rename(lzfw_vfs_t *p_vfs, creden_t *p_cred, inogen_t parent, const char
       return ENOENT;
     }
 
-
   vnode_t *p_parent_vnode = ZTOV(p_parent_znode);
   vnode_t *p_new_parent_vnode = ZTOV(p_new_parent_znode);
   ASSERT(p_parent_vnode);
@@ -3131,7 +3201,10 @@ int lzfw_rename(lzfw_vfs_t *p_vfs, creden_t *p_cred, inogen_t parent, const char
  * @param psz_newname: new file name
  * @return 0 on success, the error code otherwise
  */
-int lzfw_renameat(lzfw_vfs_t *p_vfs, creden_t *p_cred, lzfw_vnode_t *parent, const char *psz_name, lzfw_vnode_t *new_parent, const char *psz_newname)
+int lzfw_renameat(lzfw_vfs_t *p_vfs, creden_t *p_cred,
+		  lzfw_vnode_t *parent, const char *psz_name, 
+		  lzfw_vnode_t *new_parent,
+		  const char *psz_newname)
 {
   zfsvfs_t *p_zfsvfs = ((vfs_t*)p_vfs)->vfs_data;
   int i_error;
@@ -3161,7 +3234,8 @@ int lzfw_renameat(lzfw_vfs_t *p_vfs, creden_t *p_cred, lzfw_vnode_t *parent, con
  * @param size: the new size
  * @return 0 in case of success, the error code otherwise
  */
-int lzfw_truncate(lzfw_vfs_t *p_vfs, creden_t *p_cred, inogen_t file, size_t size)
+int lzfw_truncate(lzfw_vfs_t *p_vfs, creden_t *p_cred, inogen_t file,
+		  size_t size)
 {
   zfsvfs_t *p_zfsvfs = ((vfs_t*)p_vfs)->vfs_data;
   znode_t *p_znode;
