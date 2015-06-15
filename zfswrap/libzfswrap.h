@@ -20,32 +20,32 @@
 /** Reprensentation of a file system object */
 typedef struct
 {
-        /** Object inode */
-        uint64_t inode;
-        /** Object generation */
-        uint64_t generation;
+  /** Object inode */
+  uint64_t inode;
+  /** Object generation */
+  uint64_t generation;
 } inogen_t;
 
 /** Representation of a directory entry */
 typedef struct
 {
-        /** Object name */
-        char psz_filename[256];
-        /** Object representation */
-        inogen_t object;
-        /** Object type */
-        int type;
-        /** Obejct attributes */
-        struct stat stats;
+  /** Object name */
+  char psz_filename[256];
+  /** Object representation */
+  inogen_t object;
+  /** Object type */
+  int type;
+  /** Obejct attributes */
+  struct stat stats;
 } lzfw_entry_t;
 
 /** Representation of the user rights */
 typedef struct
 {
-        /** User identifier */
-        uid_t uid;
-        /** Group identifier */
-        gid_t gid;
+  /** User identifier */
+  uid_t uid;
+  /** Group identifier */
+  gid_t gid;
 } creden_t;
 
 /** libzfswrap library handle */
@@ -114,8 +114,8 @@ int lzfw_zpool_destroy(lzfw_handle_t *p_zhd, const char *psz_name, int b_force, 
  * @return 0 in case of success, the error code otherwise
  */
 int lzfw_zpool_add(lzfw_handle_t *p_zhd, const char *psz_zpool,
-                         const char *psz_type, const char **ppsz_dev,
-                         size_t i_dev, const char **ppsz_error);
+		   const char *psz_type, const char **ppsz_dev,
+		   size_t i_dev, const char **ppsz_error);
 
 /**
  * Remove the given vdevs from the zpool
@@ -127,8 +127,8 @@ int lzfw_zpool_add(lzfw_handle_t *p_zhd, const char *psz_zpool,
  * @return 0 in case of success, the error code otherwise
  */
 int lzfw_zpool_remove(lzfw_handle_t *p_zhd, const char *psz_zpool,
-                            const char **ppsz_dev, size_t i_vdevs,
-                            const char **ppsz_error);
+		      const char **ppsz_dev, size_t i_vdevs,
+		      const char **ppsz_error);
 
 /**
  * Attach the given device to the given vdev in the zpool
@@ -141,8 +141,8 @@ int lzfw_zpool_remove(lzfw_handle_t *p_zhd, const char *psz_zpool,
  * @return 0 in case of success, the error code otherwise
  */
 int lzfw_zpool_attach(lzfw_handle_t *p_zhd, const char *psz_zpool,
-                            const char *psz_current_dev, const char *psz_new_dev,
-                            int i_replacing, const char **ppsz_error);
+		      const char *psz_current_dev, const char *psz_new_dev,
+		      int i_replacing, const char **ppsz_error);
 
 /**
  * Detach the given vdevs from the zpool
@@ -309,8 +309,8 @@ int lzfw_lookup(lzfw_vfs_t *p_vfs, creden_t *p_cred, inogen_t parent, const char
  * @return 0 in case of success, the error code otherwise
  */
 int lzfw_lookupnameat(lzfw_vfs_t *p_vfs, creden_t *p_cred,
-			    lzfw_vnode_t *parent, const char *psz_name,
-			    inogen_t *p_object, int *p_type);
+		      lzfw_vnode_t *parent, const char *psz_name,
+		      inogen_t *p_object, int *p_type);
 
 /**
  * Test the access right of the given file
@@ -594,13 +594,13 @@ typedef struct dir_iter_cb_context
   uint32_t oflags; /* called-function flags */
 } dir_iter_cb_context_t;
 
-#define init_di_cb_context(ctx) \
-  do {					       \
-    (ctx)->vattr = NULL;                       \
-    (ctx)->vnode = NULL;                       \
-    (ctx)->znode = NULL;                       \
-    (ctx)->iflags = LZFW_DI_CB_IFLAG_NONE;     \
-    (ctx)->oflags = LZFW_DI_CB_OFLAG_NONE;     \
+#define init_di_cb_context(ctx)			\
+  do {						\
+    (ctx)->vattr = NULL;			\
+    (ctx)->vnode = NULL;			\
+    (ctx)->znode = NULL;			\
+    (ctx)->iflags = LZFW_DI_CB_IFLAG_NONE;	\
+    (ctx)->oflags = LZFW_DI_CB_OFLAG_NONE;	\
   } while (0)
 
 typedef int (*dir_iter_f)(vnode_t *, dir_iter_cb_context_t *, void *);
