@@ -1057,13 +1057,13 @@ lzfw_vfs_t *lzfw_mount(const char *psz_zpool, const char *psz_dir,
  */
 int lzfw_getroot(lzfw_vfs_t *p_vfs, inogen_t *root)
 {
-  zfsvfs_t *p_zfsvfs = ((vfs_t*)p_vfs)->vfs_data;
+  zfsvfs_t *zfsvfs = ((vfs_t*)p_vfs)->vfs_data;
   znode_t *znode;
   int i_error;
 
-  ZFS_ENTER(p_zfsvfs);
-  if((i_error = zfs_zget(p_zfsvfs, 3, &znode, B_TRUE))) {
-      ZFS_EXIT(p_zfsvfs);
+  ZFS_ENTER(zfsvfs);
+  if((i_error = zfs_zget(zfsvfs, 3, &znode, B_TRUE))) {
+      ZFS_EXIT(zfsvfs);
       return i_error;
   }
   ASSERT(znode != NULL);
@@ -1074,7 +1074,7 @@ int lzfw_getroot(lzfw_vfs_t *p_vfs, inogen_t *root)
 
   VN_RELE(ZTOV(znode));
 
-  ZFS_EXIT(p_zfsvfs);
+  ZFS_EXIT(zfsvfs);
 
   return 0;
 }
@@ -1145,14 +1145,14 @@ int lzfw_lookup(lzfw_vfs_t *p_vfs, creden_t *p_cred, inogen_t parent,
   if(strlen(psz_name) >= MAXNAMELEN)
     return -1;
 
-  zfsvfs_t *p_zfsvfs = ((vfs_t*)p_vfs)->vfs_data;
+  zfsvfs_t *zfsvfs = ((vfs_t*)p_vfs)->vfs_data;
   znode_t *parent_znode;
   int i_error;
 
-  ZFS_ENTER(p_zfsvfs);
+  ZFS_ENTER(zfsvfs);
 
-  if((i_error = zfs_zget(p_zfsvfs, parent.inode, &parent_znode, B_TRUE))) {
-    ZFS_EXIT(p_zfsvfs);
+  if((i_error = zfs_zget(zfsvfs, parent.inode, &parent_znode, B_TRUE))) {
+    ZFS_EXIT(zfsvfs);
     return i_error;
   }
 
@@ -1161,7 +1161,7 @@ int lzfw_lookup(lzfw_vfs_t *p_vfs, creden_t *p_cred, inogen_t parent,
   // Check the parent generation
   if(parent_znode->z_phys->zp_gen != parent.generation) {
     VN_RELE(ZTOV(parent_znode));
-    ZFS_EXIT(p_zfsvfs);
+    ZFS_EXIT(zfsvfs);
     return ENOENT;
   }
 
@@ -1173,7 +1173,7 @@ int lzfw_lookup(lzfw_vfs_t *p_vfs, creden_t *p_cred, inogen_t parent,
 			   NULL, 0, NULL, (cred_t*)p_cred, NULL, NULL,
 			   NULL))) {
     VN_RELE(parent_vnode);
-    ZFS_EXIT(p_zfsvfs);
+    ZFS_EXIT(zfsvfs);
     return i_error;
   }
 
@@ -1184,7 +1184,7 @@ int lzfw_lookup(lzfw_vfs_t *p_vfs, creden_t *p_cred, inogen_t parent,
   VN_RELE(vnode);
   VN_RELE(parent_vnode);
 
-  ZFS_EXIT(p_zfsvfs);
+  ZFS_EXIT(zfsvfs);
 
   return 0;
 }
@@ -1203,18 +1203,18 @@ int lzfw_lookupnameat(lzfw_vfs_t *p_vfs, creden_t *p_cred,
 		      vnode_t *parent, const char *psz_name,
 		      inogen_t *object, int *p_type)
 {
-  zfsvfs_t *p_zfsvfs = ((vfs_t*)p_vfs)->vfs_data;
+  zfsvfs_t *zfsvfs = ((vfs_t*)p_vfs)->vfs_data;
   int i_error;
 
   vnode_t *vnode = NULL;
 
-  ZFS_ENTER(p_zfsvfs);
+  ZFS_ENTER(zfsvfs);
 
   i_error = VOP_LOOKUP(parent, (char*)psz_name, &vnode,
 		       NULL, 0, NULL, (cred_t*)p_cred, NULL, NULL,
 		       NULL);
   if (i_error) {
-    ZFS_EXIT(p_zfsvfs);
+    ZFS_EXIT(zfsvfs);
     return i_error;
   }
 
@@ -1223,7 +1223,7 @@ int lzfw_lookupnameat(lzfw_vfs_t *p_vfs, creden_t *p_cred,
   *p_type = VTTOIF(vnode->v_type);
 
   VN_RELE(vnode);
-  ZFS_EXIT(p_zfsvfs);
+  ZFS_EXIT(zfsvfs);
 
   return 0;
 }
@@ -1239,14 +1239,14 @@ int lzfw_lookupnameat(lzfw_vfs_t *p_vfs, creden_t *p_cred,
 int lzfw_access(lzfw_vfs_t *p_vfs, creden_t *p_cred, inogen_t object,
 		int mask)
 {
-  zfsvfs_t *p_zfsvfs = ((vfs_t*)p_vfs)->vfs_data;
+  zfsvfs_t *zfsvfs = ((vfs_t*)p_vfs)->vfs_data;
   znode_t *p_znode;
   int i_error;
 
-  ZFS_ENTER(p_zfsvfs);
-  if((i_error = zfs_zget(p_zfsvfs, object.inode, &p_znode, B_TRUE)))
+  ZFS_ENTER(zfsvfs);
+  if((i_error = zfs_zget(zfsvfs, object.inode, &p_znode, B_TRUE)))
     {
-      ZFS_EXIT(p_zfsvfs);
+      ZFS_EXIT(zfsvfs);
       return i_error;
     }
   ASSERT(p_znode);
@@ -1254,7 +1254,7 @@ int lzfw_access(lzfw_vfs_t *p_vfs, creden_t *p_cred, inogen_t object,
   if(p_znode->z_phys->zp_gen != object.generation)
     {
       VN_RELE(ZTOV(p_znode));
-      ZFS_EXIT(p_zfsvfs);
+      ZFS_EXIT(zfsvfs);
       return ENOENT;
     }
 
@@ -1272,7 +1272,7 @@ int lzfw_access(lzfw_vfs_t *p_vfs, creden_t *p_cred, inogen_t object,
   i_error = VOP_ACCESS(p_vnode, mode, 0, (cred_t*)p_cred, NULL);
 
   VN_RELE(p_vnode);
-  ZFS_EXIT(p_zfsvfs);
+  ZFS_EXIT(zfsvfs);
 
   return i_error;
 }
@@ -1289,16 +1289,16 @@ int lzfw_access(lzfw_vfs_t *p_vfs, creden_t *p_cred, inogen_t object,
 int lzfw_open(lzfw_vfs_t *p_vfs, creden_t *p_cred, inogen_t object,
 	      int i_flags, vnode_t **pp_vnode)
 {
-  zfsvfs_t *p_zfsvfs = ((vfs_t*)p_vfs)->vfs_data;
+  zfsvfs_t *zfsvfs = ((vfs_t*)p_vfs)->vfs_data;
   int mode = 0, flags = 0, i_error;
   lzwu_flags2zfs(i_flags, &flags, &mode);
 
   znode_t *p_znode;
 
-  ZFS_ENTER(p_zfsvfs);
-  if((i_error = zfs_zget(p_zfsvfs, object.inode, &p_znode, B_FALSE)))
+  ZFS_ENTER(zfsvfs);
+  if((i_error = zfs_zget(zfsvfs, object.inode, &p_znode, B_FALSE)))
     {
-      ZFS_EXIT(p_zfsvfs);
+      ZFS_EXIT(zfsvfs);
       return i_error;
     }
   ASSERT(p_znode);
@@ -1306,7 +1306,7 @@ int lzfw_open(lzfw_vfs_t *p_vfs, creden_t *p_cred, inogen_t object,
   if(p_znode->z_phys->zp_gen != object.generation)
     {
       VN_RELE(ZTOV(p_znode));
-      ZFS_EXIT(p_zfsvfs);
+      ZFS_EXIT(zfsvfs);
       return ENOENT;
     }
 
@@ -1319,12 +1319,12 @@ int lzfw_open(lzfw_vfs_t *p_vfs, creden_t *p_cred, inogen_t object,
   if((i_error = VOP_OPEN(&p_vnode, flags, (cred_t*)p_cred, NULL)))
     {
       //FIXME: memleak ?
-      ZFS_EXIT(p_zfsvfs);
+      ZFS_EXIT(zfsvfs);
       return i_error;
     }
   ASSERT(p_old_vnode == p_vnode);
 
-  ZFS_EXIT(p_zfsvfs);
+  ZFS_EXIT(zfsvfs);
   *pp_vnode = p_vnode;
   return 0;
 }
@@ -1346,13 +1346,13 @@ int lzfw_openat(lzfw_vfs_t *p_vfs, creden_t *p_cred,
 		unsigned int i_flags, mode_t mode,
 		unsigned int *o_flags, vnode_t **pp_vnode)
 {
-  zfsvfs_t *p_zfsvfs = ((vfs_t*)p_vfs)->vfs_data;
+  zfsvfs_t *zfsvfs = ((vfs_t*)p_vfs)->vfs_data;
   int i_mode = 0, flags = 0, i_error;
   lzwu_flags2zfs(i_flags, &flags, &i_mode);
 
   vnode_t *vnode = NULL;
 
-  ZFS_ENTER(p_zfsvfs);
+  ZFS_ENTER(zfsvfs);
 
   i_error = VOP_LOOKUP(parent, (char*)psz_name, &vnode,
 		       NULL, 0, NULL, (cred_t*)p_cred, NULL, NULL,
@@ -1370,12 +1370,12 @@ int lzfw_openat(lzfw_vfs_t *p_vfs, creden_t *p_cred,
 			   mode, &vnode, (cred_t*)p_cred,
 			   0, NULL, NULL);
       if (i_error) {
-	ZFS_EXIT(p_zfsvfs);
+	ZFS_EXIT(zfsvfs);
 	return i_error;
       }
       *o_flags |= LZFW_OFLAG_OPEN_CREATED;
     } else {
-      ZFS_EXIT(p_zfsvfs);
+      ZFS_EXIT(zfsvfs);
       return i_error;
     }
   } else {
@@ -1391,12 +1391,12 @@ int lzfw_openat(lzfw_vfs_t *p_vfs, creden_t *p_cred,
   if (i_error) {
     //FIXME: memleak ?
     VN_RELE(vnode); // XXX added (Matt)
-    ZFS_EXIT(p_zfsvfs);
+    ZFS_EXIT(zfsvfs);
     return i_error;
   }
   ASSERT(old_vnode == vnode);
 
-  ZFS_EXIT(p_zfsvfs);
+  ZFS_EXIT(zfsvfs);
   *pp_vnode = vnode;
 
   return 0;
@@ -1416,21 +1416,21 @@ int lzfw_create(lzfw_vfs_t *p_vfs, creden_t *p_cred, inogen_t parent,
 		const char *psz_filename, mode_t mode,
 		inogen_t *p_file)
 {
-  zfsvfs_t *p_zfsvfs = ((vfs_t*)p_vfs)->vfs_data;
+  zfsvfs_t *zfsvfs = ((vfs_t*)p_vfs)->vfs_data;
   int i_error;
   znode_t *parent_znode;
 
-  ZFS_ENTER(p_zfsvfs);
-  if((i_error = zfs_zget(p_zfsvfs, parent.inode, &parent_znode,
+  ZFS_ENTER(zfsvfs);
+  if((i_error = zfs_zget(zfsvfs, parent.inode, &parent_znode,
 			 B_FALSE))) {
-    ZFS_EXIT(p_zfsvfs);
+    ZFS_EXIT(zfsvfs);
     return i_error;
   }
   ASSERT(parent_znode);
   // Check the generation
   if(parent_znode->z_phys->zp_gen != parent.generation) {
     VN_RELE(ZTOV(parent_znode));
-      ZFS_EXIT(p_zfsvfs);
+      ZFS_EXIT(zfsvfs);
       return ENOENT;
   }
 
@@ -1448,7 +1448,7 @@ int lzfw_create(lzfw_vfs_t *p_vfs, creden_t *p_cred, inogen_t parent,
 			   NONEXCL, mode, &new_vnode, (cred_t*)p_cred,
 			   0, NULL, NULL))) {
     VN_RELE(parent_vnode);
-    ZFS_EXIT(p_zfsvfs);
+    ZFS_EXIT(zfsvfs);
     return i_error;
   }
 
@@ -1457,7 +1457,7 @@ int lzfw_create(lzfw_vfs_t *p_vfs, creden_t *p_cred, inogen_t parent,
 
   VN_RELE(new_vnode);
   VN_RELE(parent_vnode);
-  ZFS_EXIT(p_zfsvfs);
+  ZFS_EXIT(zfsvfs);
   return 0;
 }
 
@@ -1517,13 +1517,13 @@ int lzfw_createat(lzfw_vfs_t *vfs, creden_t *cred,
 int lzfw_opendir(lzfw_vfs_t *p_vfs, creden_t *p_cred,
 		 inogen_t directory, vnode_t **pp_vnode)
 {
-  zfsvfs_t *p_zfsvfs = ((vfs_t*)p_vfs)->vfs_data;
+  zfsvfs_t *zfsvfs = ((vfs_t*)p_vfs)->vfs_data;
   int i_error;
   znode_t *znode;
 
-  ZFS_ENTER(p_zfsvfs);
-  if((i_error = zfs_zget(p_zfsvfs, directory.inode, &znode, B_TRUE))) {
-    ZFS_EXIT(p_zfsvfs);
+  ZFS_ENTER(zfsvfs);
+  if((i_error = zfs_zget(zfsvfs, directory.inode, &znode, B_TRUE))) {
+    ZFS_EXIT(zfsvfs);
     return i_error;
   }
   ASSERT(znode);
@@ -1531,7 +1531,7 @@ int lzfw_opendir(lzfw_vfs_t *p_vfs, creden_t *p_cred,
   // Check the generation
   if(znode->z_phys->zp_gen != directory.generation) {
     VN_RELE(ZTOV(znode));
-    ZFS_EXIT(p_zfsvfs);
+    ZFS_EXIT(zfsvfs);
     return ENOENT;
   }
 
@@ -1541,19 +1541,19 @@ int lzfw_opendir(lzfw_vfs_t *p_vfs, creden_t *p_cred,
   // Check that we have a directory
   if(vnode->v_type != VDIR) {
     VN_RELE(vnode);
-    ZFS_EXIT(p_zfsvfs);
+    ZFS_EXIT(zfsvfs);
     return ENOTDIR;
   }
 
   vnode_t *old_vnode = vnode;
   if((i_error = VOP_OPEN(&vnode, FREAD, (cred_t*)p_cred, NULL))) {
     VN_RELE(old_vnode);
-    ZFS_EXIT(p_zfsvfs);
+    ZFS_EXIT(zfsvfs);
     return i_error;
   }
   ASSERT(old_vnode == vnode);
 
-  ZFS_EXIT(p_zfsvfs);
+  ZFS_EXIT(zfsvfs);
   *pp_vnode = vnode;
   return 0;
 }
@@ -1572,7 +1572,7 @@ int lzfw_readdir(lzfw_vfs_t *p_vfs, creden_t *p_cred,
 		 vnode_t *vnode, lzfw_entry_t *p_entries,
 		 size_t size, off_t *cookie)
 {
-  zfsvfs_t *p_zfsvfs = ((vfs_t*)p_vfs)->vfs_data;
+  zfsvfs_t *zfsvfs = ((vfs_t*)p_vfs)->vfs_data;
 
   // Check that the vnode is a directory
   if(vnode->v_type != VDIR)
@@ -1593,7 +1593,7 @@ int lzfw_readdir(lzfw_vfs_t *p_vfs, creden_t *p_cred,
     struct dirent64 dirent;
   } entry;
 
-  ZFS_ENTER(p_zfsvfs);
+  ZFS_ENTER(zfsvfs);
   size_t index = 0;
   while(index < size) {
     iovec.iov_base = entry.buf;
@@ -1621,7 +1621,7 @@ int lzfw_readdir(lzfw_vfs_t *p_vfs, creden_t *p_cred,
     next_entry = entry.dirent.d_off;
     index++;
   }
-  ZFS_EXIT(p_zfsvfs);
+  ZFS_EXIT(zfsvfs);
 
   // Set the last element to NULL if we end before size elements
   if(index < size) {
@@ -1797,14 +1797,14 @@ int lzfw_closedir(lzfw_vfs_t *p_vfs, creden_t *p_cred,
 int lzfw_stat(lzfw_vfs_t *p_vfs, creden_t *p_cred,
 	      vnode_t *vnode, struct stat *p_stat)
 {
-  zfsvfs_t *p_zfsvfs = ((vfs_t*)p_vfs)->vfs_data;
+  zfsvfs_t *zfsvfs = ((vfs_t*)p_vfs)->vfs_data;
   vattr_t vattr;
   vattr.va_mask = AT_ALL;
   memset(p_stat, 0, sizeof(*p_stat));
 
-  ZFS_ENTER(p_zfsvfs);
+  ZFS_ENTER(zfsvfs);
   int i_error = VOP_GETATTR(vnode, &vattr, 0, (cred_t*)p_cred, NULL);
-  ZFS_EXIT(p_zfsvfs);
+  ZFS_EXIT(zfsvfs);
   if(i_error)
     return i_error;
 
@@ -1829,11 +1829,11 @@ static int getattr_helper(lzfw_vfs_t *p_vfs, creden_t *p_cred,
 			  inogen_t object, struct stat *p_stat,
 			  uint64_t *p_gen, int *p_type)
 {
-  zfsvfs_t *p_zfsvfs = ((vfs_t*)p_vfs)->vfs_data;
+  zfsvfs_t *zfsvfs = ((vfs_t*)p_vfs)->vfs_data;
   int i_error;
   znode_t *znode;
 
-  if((i_error = zfs_zget(p_zfsvfs, object.inode, &znode, B_FALSE)))
+  if((i_error = zfs_zget(zfsvfs, object.inode, &znode, B_FALSE)))
     return i_error;
   ASSERT(znode);
 
@@ -1892,12 +1892,12 @@ static int getattr_helper(lzfw_vfs_t *p_vfs, creden_t *p_cred,
 int lzfw_getattr(lzfw_vfs_t *p_vfs, creden_t *p_cred, inogen_t object,
 		 struct stat *p_stat, int *p_type)
 {
-  zfsvfs_t *p_zfsvfs = ((vfs_t*)p_vfs)->vfs_data;
+  zfsvfs_t *zfsvfs = ((vfs_t*)p_vfs)->vfs_data;
   int i_error;
 
-  ZFS_ENTER(p_zfsvfs);
+  ZFS_ENTER(zfsvfs);
   i_error = getattr_helper(p_vfs, p_cred, object, p_stat, NULL, p_type);
-  ZFS_EXIT(p_zfsvfs);
+  ZFS_EXIT(zfsvfs);
   return i_error;
 }
 
@@ -1915,15 +1915,15 @@ int lzfw_setattr(lzfw_vfs_t *p_vfs, creden_t *p_cred, inogen_t object,
 		 struct stat *p_stat, int flags,
 		 struct stat *p_new_stat)
 {
-  zfsvfs_t *p_zfsvfs = ((vfs_t*)p_vfs)->vfs_data;
+  zfsvfs_t *zfsvfs = ((vfs_t*)p_vfs)->vfs_data;
   int i_error;
   znode_t *znode;
   int update_time = 0;
 
-  ZFS_ENTER(p_zfsvfs);
-  if((i_error = zfs_zget(p_zfsvfs, object.inode, &znode, B_TRUE)))
+  ZFS_ENTER(zfsvfs);
+  if((i_error = zfs_zget(zfsvfs, object.inode, &znode, B_TRUE)))
     {
-      ZFS_EXIT(p_zfsvfs);
+      ZFS_EXIT(zfsvfs);
       return i_error;
     }
   ASSERT(znode);
@@ -1931,7 +1931,7 @@ int lzfw_setattr(lzfw_vfs_t *p_vfs, creden_t *p_cred, inogen_t object,
   // Check the generation
   if(znode->z_phys->zp_gen != object.generation) {
     VN_RELE(ZTOV(znode));
-    ZFS_EXIT(p_zfsvfs);
+    ZFS_EXIT(zfsvfs);
     return ENOENT;
   }
 
@@ -1971,25 +1971,25 @@ int lzfw_setattr(lzfw_vfs_t *p_vfs, creden_t *p_cred, inogen_t object,
 			NULL);
 
   VN_RELE(vnode);
-  ZFS_EXIT(p_zfsvfs);
+  ZFS_EXIT(zfsvfs);
 
   return i_error;
 }
 
 /**
  * Helper function for every function that manipulate xattrs
- * @param p_zfsvfs: the virtual file system root object
+ * @param zfsvfs: the virtual file system root object
  * @param p_cred: the user credentials
  * @param object: the object
  * @param
  */
-static int xattr_helper(zfsvfs_t *p_zfsvfs, creden_t *p_cred,
+static int xattr_helper(zfsvfs_t *zfsvfs, creden_t *p_cred,
 			inogen_t object, vnode_t **pp_vnode)
 {
   znode_t *znode;
   int i_error;
 
-  if((i_error = zfs_zget(p_zfsvfs, object.inode, &znode, B_TRUE)))
+  if((i_error = zfs_zget(zfsvfs, object.inode, &znode, B_TRUE)))
     return i_error;
   ASSERT(znode);
 
@@ -2030,20 +2030,20 @@ static int xattr_helper(zfsvfs_t *p_zfsvfs, creden_t *p_cred,
 int lzfw_listxattr(lzfw_vfs_t *p_vfs, creden_t *p_cred,
 		   inogen_t object, char **ppsz_buffer, size_t *p_size)
 {
-  zfsvfs_t *p_zfsvfs = ((vfs_t*)p_vfs)->vfs_data;
+  zfsvfs_t *zfsvfs = ((vfs_t*)p_vfs)->vfs_data;
   int i_error;
   vnode_t *vnode;
 
-  ZFS_ENTER(p_zfsvfs);
-  if((i_error = xattr_helper(p_zfsvfs, p_cred, object, &vnode))) {
-    ZFS_EXIT(p_zfsvfs);
+  ZFS_ENTER(zfsvfs);
+  if((i_error = xattr_helper(zfsvfs, p_cred, object, &vnode))) {
+    ZFS_EXIT(zfsvfs);
     return i_error;
   }
 
   // Open the speudo directory
   if((i_error = VOP_OPEN(&vnode, FREAD, (cred_t*)p_cred, NULL))) {
     VN_RELE(vnode);
-    ZFS_EXIT(p_zfsvfs);
+    ZFS_EXIT(zfsvfs);
     return i_error;
   }
 
@@ -2075,7 +2075,7 @@ int lzfw_listxattr(lzfw_vfs_t *p_vfs, creden_t *p_cred,
 			      NULL, 0))) {
       VOP_CLOSE(vnode, FREAD, 1, (offset_t)0, (cred_t*)p_cred, NULL);
       VN_RELE(vnode);
-      ZFS_EXIT(p_zfsvfs);
+      ZFS_EXIT(zfsvfs);
       return i_error;
     }
 
@@ -2096,7 +2096,7 @@ int lzfw_listxattr(lzfw_vfs_t *p_vfs, creden_t *p_cred,
 
   VOP_CLOSE(vnode, FREAD, 1, (offset_t)0, (cred_t*)p_cred, NULL);
   VN_RELE(vnode);
-  ZFS_EXIT(p_zfsvfs);
+  ZFS_EXIT(zfsvfs);
 
   // Return the values
   *ppsz_buffer = psz_buffer;
@@ -2116,20 +2116,20 @@ int lzfw_listxattr(lzfw_vfs_t *p_vfs, creden_t *p_cred,
 int lzfw_listxattr2(lzfw_vfs_t *p_vfs, creden_t *p_cred,
 		    inogen_t object, opxattr_func cb_func, void *arg)
 {
-  zfsvfs_t *p_zfsvfs = ((vfs_t*)p_vfs)->vfs_data;
+  zfsvfs_t *zfsvfs = ((vfs_t*)p_vfs)->vfs_data;
   int i_error;
   vnode_t *vnode;
 
-  ZFS_ENTER(p_zfsvfs);
-  if((i_error = xattr_helper(p_zfsvfs, p_cred, object, &vnode))) {
-    ZFS_EXIT(p_zfsvfs);
+  ZFS_ENTER(zfsvfs);
+  if((i_error = xattr_helper(zfsvfs, p_cred, object, &vnode))) {
+    ZFS_EXIT(zfsvfs);
     return i_error;
   }
 
   // Open the speudo directory
   if((i_error = VOP_OPEN(&vnode, FREAD, (cred_t*)p_cred, NULL))) {
     VN_RELE(vnode);
-    ZFS_EXIT(p_zfsvfs);
+    ZFS_EXIT(zfsvfs);
     return i_error;
   }
 
@@ -2161,7 +2161,7 @@ int lzfw_listxattr2(lzfw_vfs_t *p_vfs, creden_t *p_cred,
 			      NULL, 0))) {
       VOP_CLOSE(vnode, FREAD, 1, (offset_t)0, (cred_t*)p_cred, NULL);
       VN_RELE(vnode);
-      ZFS_EXIT(p_zfsvfs);
+      ZFS_EXIT(zfsvfs);
       return i_error;
     }
 
@@ -2183,7 +2183,7 @@ int lzfw_listxattr2(lzfw_vfs_t *p_vfs, creden_t *p_cred,
 
   VOP_CLOSE(vnode, FREAD, 1, (offset_t)0, (cred_t*)p_cred, NULL);
   VN_RELE(vnode);
-  ZFS_EXIT(p_zfsvfs);
+  ZFS_EXIT(zfsvfs);
 
   return 0;
 }
@@ -2201,13 +2201,13 @@ int lzfw_listxattr2(lzfw_vfs_t *p_vfs, creden_t *p_cred,
 int lzfw_setxattr(lzfw_vfs_t *p_vfs, creden_t *p_cred, inogen_t object,
 		  const char *psz_key, const char *psz_value)
 {
-  zfsvfs_t *p_zfsvfs = ((vfs_t*)p_vfs)->vfs_data;
+  zfsvfs_t *zfsvfs = ((vfs_t*)p_vfs)->vfs_data;
   int i_error;
   vnode_t *vnode;
 
-  ZFS_ENTER(p_zfsvfs);
-  if((i_error = xattr_helper(p_zfsvfs, p_cred, object, &vnode))) {
-    ZFS_EXIT(p_zfsvfs);
+  ZFS_ENTER(zfsvfs);
+  if((i_error = xattr_helper(zfsvfs, p_cred, object, &vnode))) {
+    ZFS_EXIT(zfsvfs);
     return i_error;
   }
 
@@ -2223,7 +2223,7 @@ int lzfw_setxattr(lzfw_vfs_t *p_vfs, creden_t *p_cred, inogen_t object,
 			   VWRITE, &pseudo_vnode, (cred_t*)p_cred, 0,
 			   NULL, NULL))) {
     VN_RELE(vnode);
-    ZFS_EXIT(p_zfsvfs);
+    ZFS_EXIT(zfsvfs);
   }
   VN_RELE(vnode);
 
@@ -2231,7 +2231,7 @@ int lzfw_setxattr(lzfw_vfs_t *p_vfs, creden_t *p_cred, inogen_t object,
   vnode_t *key_vnode = pseudo_vnode;
   if((i_error = VOP_OPEN(&key_vnode, FWRITE, (cred_t*)p_cred, NULL))) {
     VN_RELE(pseudo_vnode);
-    ZFS_EXIT(p_zfsvfs);
+    ZFS_EXIT(zfsvfs);
     return i_error;
   }
 
@@ -2252,7 +2252,7 @@ int lzfw_setxattr(lzfw_vfs_t *p_vfs, creden_t *p_cred, inogen_t object,
   VOP_CLOSE(key_vnode, FWRITE, 1, (offset_t) 0, (cred_t*)p_cred, NULL);
 
   VN_RELE(key_vnode);
-  ZFS_EXIT(p_zfsvfs);
+  ZFS_EXIT(zfsvfs);
   return i_error;
 }
 
@@ -2270,18 +2270,18 @@ int lzfw_setxattrat(lzfw_vfs_t *p_vfs, creden_t *p_cred,
 		    vnode_t *vnode, const char *psz_key,
 		    const char *psz_value)
 {
-  zfsvfs_t *p_zfsvfs = ((vfs_t*)p_vfs)->vfs_data;
+  zfsvfs_t *zfsvfs = ((vfs_t*)p_vfs)->vfs_data;
   vnode_t *xattr_vnode;
   int i_error;
 
-  ZFS_ENTER(p_zfsvfs);
+  ZFS_ENTER(zfsvfs);
 
   /* lookup xattr directory */
   i_error = VOP_LOOKUP(vnode, "", &xattr_vnode, NULL,
 		       LOOKUP_XATTR | CREATE_XATTR_DIR, NULL,
 		       (cred_t*)p_cred, NULL, NULL, NULL);
   if (i_error) {
-    ZFS_EXIT(p_zfsvfs);
+    ZFS_EXIT(zfsvfs);
     return i_error;
   }
 
@@ -2298,7 +2298,7 @@ int lzfw_setxattrat(lzfw_vfs_t *p_vfs, creden_t *p_cred,
 		       NULL, NULL);
   if (i_error) {
     VN_RELE(xattr_vnode);
-    ZFS_EXIT(p_zfsvfs);
+    ZFS_EXIT(zfsvfs);
   }
   VN_RELE(xattr_vnode);
 
@@ -2306,7 +2306,7 @@ int lzfw_setxattrat(lzfw_vfs_t *p_vfs, creden_t *p_cred,
   i_error = VOP_OPEN(&pseudo_vnode, FWRITE, (cred_t*)p_cred, NULL);
   if (i_error) {
     VN_RELE(pseudo_vnode); // rele ref taken in VOP_CREATE
-    ZFS_EXIT(p_zfsvfs);
+    ZFS_EXIT(zfsvfs);
     return i_error;
   }
 
@@ -2329,7 +2329,7 @@ int lzfw_setxattrat(lzfw_vfs_t *p_vfs, creden_t *p_cred,
 	    NULL);
   VN_RELE(pseudo_vnode); // rele rev taken in VOP_CREATE
 
-  ZFS_EXIT(p_zfsvfs);
+  ZFS_EXIT(zfsvfs);
 
   return i_error;
 }
@@ -2347,14 +2347,14 @@ int lzfw_getxattr(lzfw_vfs_t *p_vfs, creden_t *p_cred,
 		  inogen_t object, const char *psz_key,
 		  char **ppsz_value)
 {
-  zfsvfs_t *p_zfsvfs = ((vfs_t*)p_vfs)->vfs_data;
+  zfsvfs_t *zfsvfs = ((vfs_t*)p_vfs)->vfs_data;
   int i_error;
   vnode_t *vnode;
   char *psz_value;
 
-  ZFS_ENTER(p_zfsvfs);
-  if((i_error = xattr_helper(p_zfsvfs, p_cred, object, &vnode))) {
-    ZFS_EXIT(p_zfsvfs);
+  ZFS_ENTER(zfsvfs);
+  if((i_error = xattr_helper(zfsvfs, p_cred, object, &vnode))) {
+    ZFS_EXIT(zfsvfs);
     return i_error;
   }
 
@@ -2364,7 +2364,7 @@ int lzfw_getxattr(lzfw_vfs_t *p_vfs, creden_t *p_cred,
 			   0, NULL, (cred_t*)p_cred, NULL, NULL,
 			   NULL))) {
     VN_RELE(vnode);
-    ZFS_EXIT(p_zfsvfs);
+    ZFS_EXIT(zfsvfs);
     return i_error;
   }
   VN_RELE(vnode);
@@ -2375,13 +2375,13 @@ int lzfw_getxattr(lzfw_vfs_t *p_vfs, creden_t *p_cred,
   if((i_error = VOP_GETATTR(key_vnode, &vattr, 0, (cred_t*)p_cred,
 			    NULL))) {
     VN_RELE(key_vnode);
-    ZFS_EXIT(p_zfsvfs);
+    ZFS_EXIT(zfsvfs);
     return i_error;
   }
 
   if((i_error = VOP_OPEN(&key_vnode, FREAD, (cred_t*)p_cred, NULL))) {
     VN_RELE(key_vnode);
-    ZFS_EXIT(p_zfsvfs);
+    ZFS_EXIT(zfsvfs);
     return i_error;
   }
 
@@ -2404,7 +2404,7 @@ int lzfw_getxattr(lzfw_vfs_t *p_vfs, creden_t *p_cred,
   VOP_CLOSE(key_vnode, FREAD, 1, (offset_t)0, (cred_t*)p_cred, NULL);
 
   VN_RELE(key_vnode);
-  ZFS_EXIT(p_zfsvfs);
+  ZFS_EXIT(zfsvfs);
 
   if(!i_error) {
     psz_value[vattr.va_size] = '\0';
@@ -2431,7 +2431,7 @@ int lzfw_getxattrat(lzfw_vfs_t *p_vfs, creden_t *p_cred,
 		    vnode_t *vnode, const char *psz_key,
 		    char *value, size_t *size)
 {
-  zfsvfs_t *p_zfsvfs = ((vfs_t*)p_vfs)->vfs_data;
+  zfsvfs_t *zfsvfs = ((vfs_t*)p_vfs)->vfs_data;
   vnode_t *xattr_vnode;
   int i_error;
 
@@ -2447,14 +2447,14 @@ int lzfw_getxattrat(lzfw_vfs_t *p_vfs, creden_t *p_cred,
   uio.uio_resid = iovec.iov_len;
   uio.uio_loffset = 0;
 
-  ZFS_ENTER(p_zfsvfs);
+  ZFS_ENTER(zfsvfs);
 
   /* lookup xattr directory */
   i_error = VOP_LOOKUP(vnode, "", &xattr_vnode, NULL,
 		       LOOKUP_XATTR | CREATE_XATTR_DIR, NULL,
 		       (cred_t*)p_cred, NULL, NULL, NULL);
   if (i_error) {
-    ZFS_EXIT(p_zfsvfs);
+    ZFS_EXIT(zfsvfs);
     return i_error;
   }
 
@@ -2465,7 +2465,7 @@ int lzfw_getxattrat(lzfw_vfs_t *p_vfs, creden_t *p_cred,
 		       NULL);
   if (i_error) {
     VN_RELE(xattr_vnode);
-    ZFS_EXIT(p_zfsvfs);
+    ZFS_EXIT(zfsvfs);
     return i_error;
   }
 
@@ -2486,7 +2486,7 @@ int lzfw_getxattrat(lzfw_vfs_t *p_vfs, creden_t *p_cred,
   i_error = VOP_OPEN(&pseudo_vnode, FREAD, (cred_t*)p_cred, NULL);
   if (i_error) {
     VN_RELE(pseudo_vnode);
-    ZFS_EXIT(p_zfsvfs);
+    ZFS_EXIT(zfsvfs);
     return i_error;
   }
   
@@ -2500,7 +2500,7 @@ int lzfw_getxattrat(lzfw_vfs_t *p_vfs, creden_t *p_cred,
 
  out:
   VN_RELE(pseudo_vnode);
-  ZFS_EXIT(p_zfsvfs);
+  ZFS_EXIT(zfsvfs);
 
   return i_error;
 }
@@ -2516,20 +2516,20 @@ int lzfw_getxattrat(lzfw_vfs_t *p_vfs, creden_t *p_cred,
 int lzfw_removexattr(lzfw_vfs_t *p_vfs, creden_t *p_cred,
 		     inogen_t object, const char *psz_key)
 {
-  zfsvfs_t *p_zfsvfs = ((vfs_t*)p_vfs)->vfs_data;
+  zfsvfs_t *zfsvfs = ((vfs_t*)p_vfs)->vfs_data;
   int i_error;
   vnode_t *vnode;
 
-  ZFS_ENTER(p_zfsvfs);
-  if((i_error = xattr_helper(p_zfsvfs, p_cred, object, &vnode))) {
-    ZFS_EXIT(p_zfsvfs);
+  ZFS_ENTER(zfsvfs);
+  if((i_error = xattr_helper(zfsvfs, p_cred, object, &vnode))) {
+    ZFS_EXIT(zfsvfs);
     return i_error;
   }
 
   i_error = VOP_REMOVE(vnode, (char*)psz_key, (cred_t*)p_cred, NULL,
 		       0);
   VN_RELE(vnode);
-  ZFS_EXIT(p_zfsvfs);
+  ZFS_EXIT(zfsvfs);
 
   return i_error;
 }
@@ -2549,7 +2549,7 @@ ssize_t lzfw_read(lzfw_vfs_t *p_vfs, creden_t *p_cred,
 		  vnode_t *vnode, void *p_buffer, size_t size,
 		  int behind, off_t offset)
 {
-  zfsvfs_t *p_zfsvfs = ((vfs_t*)p_vfs)->vfs_data;
+  zfsvfs_t *zfsvfs = ((vfs_t*)p_vfs)->vfs_data;
   iovec_t iovec;
   uio_t uio;
   uio.uio_iov = &iovec;
@@ -2565,9 +2565,9 @@ ssize_t lzfw_read(lzfw_vfs_t *p_vfs, creden_t *p_cred,
   if(behind)
     uio.uio_loffset += VTOZ(vnode)->z_phys->zp_size;
 
-  ZFS_ENTER(p_zfsvfs);
+  ZFS_ENTER(zfsvfs);
   ssize_t error = VOP_READ(vnode, &uio, 0, (cred_t*)p_cred, NULL);
-  ZFS_EXIT(p_zfsvfs);
+  ZFS_EXIT(zfsvfs);
 
   /* XXXX return from VOP_READ is always discarded? */
   if(offset == uio.uio_loffset)
@@ -2592,7 +2592,7 @@ ssize_t lzfw_preadv(lzfw_vfs_t *p_vfs, creden_t *cred,
 		    struct iovec *iov, int iovcnt,
 		    off_t offset)
 {
-  zfsvfs_t *p_zfsvfs = ((vfs_t*)p_vfs)->vfs_data;
+  zfsvfs_t *zfsvfs = ((vfs_t*)p_vfs)->vfs_data;
   uio_t uio;
   ssize_t resid, error;
   int ix;
@@ -2610,14 +2610,14 @@ ssize_t lzfw_preadv(lzfw_vfs_t *p_vfs, creden_t *cred,
   }
   uio.uio_resid = resid;
 
-  ZFS_ENTER(p_zfsvfs);
+  ZFS_ENTER(zfsvfs);
 
   error = VOP_READ(vnode, &uio, 0, (cred_t*)cred, NULL);
   /* return count of bytes actually read */
   if (!error)
     error = resid - uio.uio_resid;
 
-  ZFS_EXIT(p_zfsvfs);
+  ZFS_EXIT(zfsvfs);
 
   return error;
 }
@@ -2637,7 +2637,7 @@ ssize_t lzfw_write(lzfw_vfs_t *p_vfs, creden_t *p_cred,
 		   vnode_t *vnode, void *p_buffer, size_t size,
 		   int behind, off_t offset)
 {
-  zfsvfs_t *p_zfsvfs = ((vfs_t*)p_vfs)->vfs_data;
+  zfsvfs_t *zfsvfs = ((vfs_t*)p_vfs)->vfs_data;
   iovec_t iovec;
   uio_t uio;
   uio.uio_iov = &iovec;
@@ -2653,9 +2653,9 @@ ssize_t lzfw_write(lzfw_vfs_t *p_vfs, creden_t *p_cred,
   if(behind)
     uio.uio_loffset += VTOZ(vnode)->z_phys->zp_size;
 
-  ZFS_ENTER(p_zfsvfs);
+  ZFS_ENTER(zfsvfs);
   ssize_t error = VOP_WRITE(vnode, &uio, 0, (cred_t*)p_cred, NULL);
-  ZFS_EXIT(p_zfsvfs);
+  ZFS_EXIT(zfsvfs);
 
   return error;
 }
@@ -2674,7 +2674,7 @@ ssize_t lzfw_pwritev(lzfw_vfs_t *p_vfs, creden_t *cred,
 		     vnode_t *vnode, struct iovec *iov, int iovcnt,
 		     off_t offset)
 {
-  zfsvfs_t *p_zfsvfs = ((vfs_t*)p_vfs)->vfs_data;
+  zfsvfs_t *zfsvfs = ((vfs_t*)p_vfs)->vfs_data;
   uio_t uio;
   ssize_t resid, error;
   int ix;
@@ -2692,7 +2692,7 @@ ssize_t lzfw_pwritev(lzfw_vfs_t *p_vfs, creden_t *cred,
   }
   uio.uio_resid = resid;
 
-  ZFS_ENTER(p_zfsvfs);
+  ZFS_ENTER(zfsvfs);
 
   error = VOP_WRITE(vnode, &uio, 0, (cred_t*)cred, NULL);
 
@@ -2700,7 +2700,7 @@ ssize_t lzfw_pwritev(lzfw_vfs_t *p_vfs, creden_t *cred,
   if (!error)
     error = resid - uio.uio_resid;
 
-  ZFS_EXIT(p_zfsvfs);
+  ZFS_EXIT(zfsvfs);
 
   return error;
 }
@@ -2716,16 +2716,16 @@ ssize_t lzfw_pwritev(lzfw_vfs_t *p_vfs, creden_t *cred,
 int lzfw_close(lzfw_vfs_t *p_vfs, creden_t *p_cred,
 	       vnode_t *vnode, int i_flags)
 {
-  zfsvfs_t *p_zfsvfs = ((vfs_t*)p_vfs)->vfs_data;
+  zfsvfs_t *zfsvfs = ((vfs_t*)p_vfs)->vfs_data;
 
   int mode, flags, i_error;
   lzwu_flags2zfs(i_flags, &flags, &mode);
 
-  ZFS_ENTER(p_zfsvfs);
+  ZFS_ENTER(zfsvfs);
   i_error = VOP_CLOSE(vnode, flags, 1, (offset_t)0, (cred_t*)p_cred,
 		      NULL);
   VN_RELE(vnode);
-  ZFS_EXIT(p_zfsvfs);
+  ZFS_EXIT(zfsvfs);
   return i_error;
 }
 
@@ -2743,14 +2743,14 @@ int lzfw_mkdir(lzfw_vfs_t *p_vfs, creden_t *p_cred, inogen_t parent,
 	       const char *psz_name, mode_t mode,
 	       inogen_t *p_directory)
 {
-  zfsvfs_t *p_zfsvfs = ((vfs_t*)p_vfs)->vfs_data;
+  zfsvfs_t *zfsvfs = ((vfs_t*)p_vfs)->vfs_data;
   int i_error;
   znode_t *parent_znode;
 
-  ZFS_ENTER(p_zfsvfs);
-  if((i_error = zfs_zget(p_zfsvfs, parent.inode, &parent_znode,
+  ZFS_ENTER(zfsvfs);
+  if((i_error = zfs_zget(zfsvfs, parent.inode, &parent_znode,
 			 B_FALSE))) {
-    ZFS_EXIT(p_zfsvfs);
+    ZFS_EXIT(zfsvfs);
     return i_error;
   }
   ASSERT(parent_znode != NULL);
@@ -2758,7 +2758,7 @@ int lzfw_mkdir(lzfw_vfs_t *p_vfs, creden_t *p_cred, inogen_t parent,
   // Check the generation
   if(parent_znode->z_phys->zp_gen != parent.generation) {
     VN_RELE(ZTOV(parent_znode));
-    ZFS_EXIT(p_zfsvfs);
+    ZFS_EXIT(zfsvfs);
     return ENOENT;
   }
 
@@ -2774,7 +2774,7 @@ int lzfw_mkdir(lzfw_vfs_t *p_vfs, creden_t *p_cred, inogen_t parent,
   if((i_error = VOP_MKDIR(parent_vnode, (char*)psz_name, &vattr,
 			  &vnode, (cred_t*)p_cred, NULL, 0, NULL))) {
     VN_RELE(parent_vnode);
-    ZFS_EXIT(p_zfsvfs);
+    ZFS_EXIT(zfsvfs);
     return i_error;
   }
 
@@ -2783,7 +2783,7 @@ int lzfw_mkdir(lzfw_vfs_t *p_vfs, creden_t *p_cred, inogen_t parent,
 
   VN_RELE(vnode);
   VN_RELE(parent_vnode);
-  ZFS_EXIT(p_zfsvfs);
+  ZFS_EXIT(zfsvfs);
 
   return 0;
 }
@@ -2802,12 +2802,12 @@ int lzfw_mkdirat(lzfw_vfs_t *p_vfs, creden_t *p_cred,
 		 vnode_t *parent, const char *psz_name,
 		 mode_t mode, inogen_t *p_directory)
 {
-  zfsvfs_t *p_zfsvfs = ((vfs_t*)p_vfs)->vfs_data;
+  zfsvfs_t *zfsvfs = ((vfs_t*)p_vfs)->vfs_data;
   int i_error;
 
   ASSERT(parent);
 
-  ZFS_ENTER(p_zfsvfs);
+  ZFS_ENTER(zfsvfs);
 
   vnode_t *vnode = NULL;
 
@@ -2819,7 +2819,7 @@ int lzfw_mkdirat(lzfw_vfs_t *p_vfs, creden_t *p_cred,
   i_error = VOP_MKDIR(parent, (char*)psz_name, &vattr, &vnode,
 		      (cred_t*)p_cred, NULL, 0, NULL);
   if (i_error) {
-    ZFS_EXIT(p_zfsvfs);
+    ZFS_EXIT(zfsvfs);
     return i_error;
   }
 
@@ -2827,7 +2827,7 @@ int lzfw_mkdirat(lzfw_vfs_t *p_vfs, creden_t *p_cred,
   p_directory->generation = VTOZ(vnode)->z_phys->zp_gen;
 
   VN_RELE(vnode);
-  ZFS_EXIT(p_zfsvfs);
+  ZFS_EXIT(zfsvfs);
 
   return 0;
 }
@@ -2843,14 +2843,14 @@ int lzfw_mkdirat(lzfw_vfs_t *p_vfs, creden_t *p_cred,
 int lzfw_rmdir(lzfw_vfs_t *p_vfs, creden_t *p_cred, inogen_t parent,
 	       const char *psz_filename)
 {
-  zfsvfs_t *p_zfsvfs = ((vfs_t*)p_vfs)->vfs_data;
+  zfsvfs_t *zfsvfs = ((vfs_t*)p_vfs)->vfs_data;
   int i_error;
   znode_t *parent_znode;
 
-  ZFS_ENTER(p_zfsvfs);
-  if((i_error = zfs_zget(p_zfsvfs, parent.inode, &parent_znode,
+  ZFS_ENTER(zfsvfs);
+  if((i_error = zfs_zget(zfsvfs, parent.inode, &parent_znode,
 			 B_FALSE))) {
-    ZFS_EXIT(p_zfsvfs);
+    ZFS_EXIT(zfsvfs);
     return i_error;
   }
   ASSERT(parent_znode);
@@ -2858,7 +2858,7 @@ int lzfw_rmdir(lzfw_vfs_t *p_vfs, creden_t *p_cred, inogen_t parent,
   // Check the generation
   if(parent_znode->z_phys->zp_gen != parent.generation) {
     VN_RELE(ZTOV(parent_znode));
-    ZFS_EXIT(p_zfsvfs);
+    ZFS_EXIT(zfsvfs);
     return ENOENT;
   }
 
@@ -2869,7 +2869,7 @@ int lzfw_rmdir(lzfw_vfs_t *p_vfs, creden_t *p_cred, inogen_t parent,
 		      (cred_t*)p_cred, NULL, 0);
 
   VN_RELE(parent_vnode);
-  ZFS_EXIT(p_zfsvfs);
+  ZFS_EXIT(zfsvfs);
 
   return i_error == EEXIST ? ENOTEMPTY : i_error;
 }
@@ -2888,14 +2888,14 @@ int lzfw_symlink(lzfw_vfs_t *p_vfs, creden_t *p_cred, inogen_t parent,
 		 const char *psz_name, const char *psz_link,
 		 inogen_t *p_symlink)
 {
-  zfsvfs_t *p_zfsvfs = ((vfs_t*)p_vfs)->vfs_data;
+  zfsvfs_t *zfsvfs = ((vfs_t*)p_vfs)->vfs_data;
   int i_error;
   znode_t *parent_znode;
 
-  ZFS_ENTER(p_zfsvfs);
-  if((i_error = zfs_zget(p_zfsvfs, parent.inode, &parent_znode,
+  ZFS_ENTER(zfsvfs);
+  if((i_error = zfs_zget(zfsvfs, parent.inode, &parent_znode,
 			 B_FALSE))) {
-    ZFS_EXIT(p_zfsvfs);
+    ZFS_EXIT(zfsvfs);
     return i_error;
   }
   ASSERT(parent_znode != NULL);
@@ -2903,7 +2903,7 @@ int lzfw_symlink(lzfw_vfs_t *p_vfs, creden_t *p_cred, inogen_t parent,
   // Check generation
   if(parent_znode->z_phys->zp_gen != parent.generation) {
     VN_RELE(ZTOV(parent_znode));
-    ZFS_EXIT(p_zfsvfs);
+    ZFS_EXIT(zfsvfs);
     return ENOENT;
   }
 
@@ -2919,7 +2919,7 @@ int lzfw_symlink(lzfw_vfs_t *p_vfs, creden_t *p_cred, inogen_t parent,
 			    (char*) psz_link, (cred_t*)p_cred, NULL,
 			    0))) {
     VN_RELE(parent_vnode);
-    ZFS_EXIT(p_zfsvfs);
+    ZFS_EXIT(zfsvfs);
     return i_error;
   }
 
@@ -2928,7 +2928,7 @@ int lzfw_symlink(lzfw_vfs_t *p_vfs, creden_t *p_cred, inogen_t parent,
 			   NULL, 0, NULL, (cred_t*)p_cred, NULL, NULL,
 			   NULL))) {
     VN_RELE(parent_vnode);
-    ZFS_EXIT(p_zfsvfs);
+    ZFS_EXIT(zfsvfs);
     return i_error;
   }
 
@@ -2938,7 +2938,7 @@ int lzfw_symlink(lzfw_vfs_t *p_vfs, creden_t *p_cred, inogen_t parent,
 
   VN_RELE(vnode);
   VN_RELE(parent_vnode);
-  ZFS_EXIT(p_zfsvfs);
+  ZFS_EXIT(zfsvfs);
   return 0;
 }
 
@@ -2955,14 +2955,14 @@ int lzfw_readlink(lzfw_vfs_t *p_vfs, creden_t *p_cred,
 		  inogen_t symlink, char *psz_content,
 		  size_t content_size)
 {
-  zfsvfs_t *p_zfsvfs = ((vfs_t*)p_vfs)->vfs_data;
+  zfsvfs_t *zfsvfs = ((vfs_t*)p_vfs)->vfs_data;
   int i_error;
   znode_t *znode;
 
-  ZFS_ENTER(p_zfsvfs);
+  ZFS_ENTER(zfsvfs);
 
-  if((i_error = zfs_zget(p_zfsvfs, symlink.inode, &znode, B_FALSE))) {
-    ZFS_EXIT(p_zfsvfs);
+  if((i_error = zfs_zget(zfsvfs, symlink.inode, &znode, B_FALSE))) {
+    ZFS_EXIT(zfsvfs);
     return i_error;
   }
   ASSERT(znode != NULL);
@@ -2970,7 +2970,7 @@ int lzfw_readlink(lzfw_vfs_t *p_vfs, creden_t *p_cred,
   // Check generation
   if(znode->z_phys->zp_gen != symlink.generation) {
     VN_RELE(ZTOV(znode));
-    ZFS_EXIT(p_zfsvfs);
+    ZFS_EXIT(zfsvfs);
     return ENOENT;
   }
 
@@ -2991,7 +2991,7 @@ int lzfw_readlink(lzfw_vfs_t *p_vfs, creden_t *p_cred,
 
   i_error = VOP_READLINK(vnode, &uio, (cred_t*)p_cred, NULL);
   VN_RELE(vnode);
-  ZFS_EXIT(p_zfsvfs);
+  ZFS_EXIT(zfsvfs);
 
   if(!i_error)
     psz_content[uio.uio_loffset] = '\0';
@@ -3013,14 +3013,14 @@ int lzfw_readlink(lzfw_vfs_t *p_vfs, creden_t *p_cred,
 int lzfw_link(lzfw_vfs_t *p_vfs, creden_t *p_cred, inogen_t parent,
 	      inogen_t target, const char *psz_name)
 {
-  zfsvfs_t *p_zfsvfs = ((vfs_t*)p_vfs)->vfs_data;
+  zfsvfs_t *zfsvfs = ((vfs_t*)p_vfs)->vfs_data;
   int i_error;
   znode_t *parent_znode, *target_znode;
 
-  ZFS_ENTER(p_zfsvfs);
-  if((i_error = zfs_zget(p_zfsvfs, parent.inode, &parent_znode,
+  ZFS_ENTER(zfsvfs);
+  if((i_error = zfs_zget(zfsvfs, parent.inode, &parent_znode,
 			 B_FALSE))) {
-    ZFS_EXIT(p_zfsvfs);
+    ZFS_EXIT(zfsvfs);
     return i_error;
   }
   ASSERT(parent_znode);
@@ -3028,14 +3028,14 @@ int lzfw_link(lzfw_vfs_t *p_vfs, creden_t *p_cred, inogen_t parent,
   // Check the generation
   if(parent_znode->z_phys->zp_gen != parent.generation) {
     VN_RELE(ZTOV(parent_znode));
-    ZFS_EXIT(p_zfsvfs);
+    ZFS_EXIT(zfsvfs);
     return ENOENT;
   }
 
-  if((i_error = zfs_zget(p_zfsvfs, target.inode, &target_znode,
+  if((i_error = zfs_zget(zfsvfs, target.inode, &target_znode,
 			 B_FALSE))) {
     VN_RELE((ZTOV(parent_znode)));
-    ZFS_EXIT(p_zfsvfs);
+    ZFS_EXIT(zfsvfs);
     return i_error;
   }
   ASSERT(target_znode);
@@ -3044,7 +3044,7 @@ int lzfw_link(lzfw_vfs_t *p_vfs, creden_t *p_cred, inogen_t parent,
   if(target_znode->z_phys->zp_gen != target.generation) {
     VN_RELE(ZTOV(target_znode));
     VN_RELE(ZTOV(parent_znode));
-    ZFS_EXIT(p_zfsvfs);
+    ZFS_EXIT(zfsvfs);
     return ENOENT;
   }
 
@@ -3057,7 +3057,7 @@ int lzfw_link(lzfw_vfs_t *p_vfs, creden_t *p_cred, inogen_t parent,
   VN_RELE(target_vnode);
   VN_RELE(parent_vnode);
 
-  ZFS_EXIT(p_zfsvfs);
+  ZFS_EXIT(zfsvfs);
 
   return i_error;
 }
@@ -3073,15 +3073,15 @@ int lzfw_link(lzfw_vfs_t *p_vfs, creden_t *p_cred, inogen_t parent,
 int lzfw_unlink(lzfw_vfs_t *p_vfs, creden_t *p_cred, inogen_t parent,
 		const char *psz_filename)
 {
-  zfsvfs_t *p_zfsvfs = ((vfs_t*)p_vfs)->vfs_data;
+  zfsvfs_t *zfsvfs = ((vfs_t*)p_vfs)->vfs_data;
   int i_error;
   znode_t *parent_znode;
 
-  ZFS_ENTER(p_zfsvfs);
+  ZFS_ENTER(zfsvfs);
 
-  if((i_error = zfs_zget(p_zfsvfs, parent.inode, &parent_znode,
+  if((i_error = zfs_zget(zfsvfs, parent.inode, &parent_znode,
 			 B_FALSE))) {
-    ZFS_EXIT(p_zfsvfs);
+    ZFS_EXIT(zfsvfs);
     return i_error;
   }
   ASSERT(parent_znode);
@@ -3089,7 +3089,7 @@ int lzfw_unlink(lzfw_vfs_t *p_vfs, creden_t *p_cred, inogen_t parent,
   // Check the generation
   if(parent_znode->z_phys->zp_gen != parent.generation) {
     VN_RELE(ZTOV(parent_znode));
-    ZFS_EXIT(p_zfsvfs);
+    ZFS_EXIT(zfsvfs);
     return ENOENT;
   }
 
@@ -3100,7 +3100,7 @@ int lzfw_unlink(lzfw_vfs_t *p_vfs, creden_t *p_cred, inogen_t parent,
 		       (cred_t*)p_cred, NULL, 0);
 
   VN_RELE(parent_vnode);
-  ZFS_EXIT(p_zfsvfs);
+  ZFS_EXIT(zfsvfs);
 
   return i_error;
 }
@@ -3118,17 +3118,17 @@ int lzfw_unlinkat(lzfw_vfs_t *p_vfs, creden_t *p_cred,
 		  vnode_t* parent, const char *psz_filename,
 		  int flags)
 {
-  zfsvfs_t *p_zfsvfs = ((vfs_t*)p_vfs)->vfs_data;
+  zfsvfs_t *zfsvfs = ((vfs_t*)p_vfs)->vfs_data;
   int i_error;
 
   ASSERT(parent);
 
-  ZFS_ENTER(p_zfsvfs);
+  ZFS_ENTER(zfsvfs);
 
   i_error = VOP_REMOVE(parent, (char*)psz_filename, (cred_t*)p_cred,
 		       NULL, 0);
 
-  ZFS_EXIT(p_zfsvfs);
+  ZFS_EXIT(zfsvfs);
 
   return i_error;
 }
@@ -3147,15 +3147,15 @@ int lzfw_rename(lzfw_vfs_t *p_vfs, creden_t *p_cred, inogen_t parent,
 		const char *psz_filename, inogen_t new_parent,
 		const char *psz_new_filename)
 {
-  zfsvfs_t *p_zfsvfs = ((vfs_t*)p_vfs)->vfs_data;
+  zfsvfs_t *zfsvfs = ((vfs_t*)p_vfs)->vfs_data;
   znode_t *parent_znode, *new_parent_znode;
   int i_error;
 
-  ZFS_ENTER(p_zfsvfs);
+  ZFS_ENTER(zfsvfs);
 
-  if((i_error = zfs_zget(p_zfsvfs, parent.inode, &parent_znode,
+  if((i_error = zfs_zget(zfsvfs, parent.inode, &parent_znode,
 			 B_FALSE))) {
-    ZFS_EXIT(p_zfsvfs);
+    ZFS_EXIT(zfsvfs);
     return i_error;
   }
   ASSERT(parent_znode);
@@ -3163,14 +3163,14 @@ int lzfw_rename(lzfw_vfs_t *p_vfs, creden_t *p_cred, inogen_t parent,
   // Check the generation
   if(parent_znode->z_phys->zp_gen != parent.generation) {
     VN_RELE(ZTOV(parent_znode));
-    ZFS_EXIT(p_zfsvfs);
+    ZFS_EXIT(zfsvfs);
     return ENOENT;
   }
 
-  if((i_error = zfs_zget(p_zfsvfs, new_parent.inode,
+  if((i_error = zfs_zget(zfsvfs, new_parent.inode,
 			 &new_parent_znode, B_FALSE))) {
     VN_RELE(ZTOV(parent_znode));
-    ZFS_EXIT(p_zfsvfs);
+    ZFS_EXIT(zfsvfs);
     return i_error;
   }
   ASSERT(new_parent_znode);
@@ -3179,7 +3179,7 @@ int lzfw_rename(lzfw_vfs_t *p_vfs, creden_t *p_cred, inogen_t parent,
   if(new_parent_znode->z_phys->zp_gen != new_parent.generation) {
     VN_RELE(ZTOV(new_parent_znode));
     VN_RELE(ZTOV(parent_znode));
-    ZFS_EXIT(p_zfsvfs);
+    ZFS_EXIT(zfsvfs);
     return ENOENT;
   }
 
@@ -3195,7 +3195,7 @@ int lzfw_rename(lzfw_vfs_t *p_vfs, creden_t *p_cred, inogen_t parent,
   VN_RELE(new_parent_vnode);
   VN_RELE(parent_vnode);
 
-  ZFS_EXIT(p_zfsvfs);
+  ZFS_EXIT(zfsvfs);
 
   return i_error;
 }
@@ -3215,10 +3215,10 @@ int lzfw_renameat(lzfw_vfs_t *p_vfs, creden_t *p_cred,
 		  vnode_t *new_parent,
 		  const char *psz_newname)
 {
-  zfsvfs_t *p_zfsvfs = ((vfs_t*)p_vfs)->vfs_data;
+  zfsvfs_t *zfsvfs = ((vfs_t*)p_vfs)->vfs_data;
   int i_error;
 
-  ZFS_ENTER(p_zfsvfs);
+  ZFS_ENTER(zfsvfs);
 
   ASSERT(parent);
   ASSERT(new_parent);
@@ -3226,7 +3226,7 @@ int lzfw_renameat(lzfw_vfs_t *p_vfs, creden_t *p_cred,
   i_error = VOP_RENAME(parent, (char*)psz_name, new_parent,
 		       (char*)psz_newname, (cred_t*)p_cred, NULL, 0);
 
-  ZFS_EXIT(p_zfsvfs);
+  ZFS_EXIT(zfsvfs);
 
   return i_error;
 }
@@ -3242,13 +3242,13 @@ int lzfw_renameat(lzfw_vfs_t *p_vfs, creden_t *p_cred,
 int lzfw_truncate(lzfw_vfs_t *p_vfs, creden_t *p_cred, inogen_t file,
 		  size_t size)
 {
-  zfsvfs_t *p_zfsvfs = ((vfs_t*)p_vfs)->vfs_data;
+  zfsvfs_t *zfsvfs = ((vfs_t*)p_vfs)->vfs_data;
   znode_t *znode;
   int i_error;
 
-  ZFS_ENTER(p_zfsvfs);
-  if((i_error = zfs_zget(p_zfsvfs, file.inode, &znode, B_TRUE))) {
-    ZFS_EXIT(p_zfsvfs);
+  ZFS_ENTER(zfsvfs);
+  if((i_error = zfs_zget(zfsvfs, file.inode, &znode, B_TRUE))) {
+    ZFS_EXIT(zfsvfs);
     return i_error;
   }
   ASSERT(znode);
@@ -3256,7 +3256,7 @@ int lzfw_truncate(lzfw_vfs_t *p_vfs, creden_t *p_cred, inogen_t file,
   // Check the generation
   if(znode->z_phys->zp_gen != file.generation) {
     VN_RELE(ZTOV(znode));
-    ZFS_EXIT(p_zfsvfs);
+    ZFS_EXIT(zfsvfs);
     return ENOENT;
   }
 
@@ -3273,7 +3273,7 @@ int lzfw_truncate(lzfw_vfs_t *p_vfs, creden_t *p_cred, inogen_t file,
 		      NULL);
   VN_RELE(vnode);
 
-  ZFS_EXIT(p_zfsvfs);
+  ZFS_EXIT(zfsvfs);
 
   return i_error;
 }
@@ -3290,7 +3290,7 @@ int lzfw_truncate(lzfw_vfs_t *p_vfs, creden_t *p_cred, inogen_t file,
 int lzfw_zero(lzfw_vfs_t *p_vfs, creden_t *cred, vnode_t *vnode,
 	      off_t offset, size_t length)
 {
-  zfsvfs_t *p_zfsvfs = ((vfs_t*)p_vfs)->vfs_data;
+  zfsvfs_t *zfsvfs = ((vfs_t*)p_vfs)->vfs_data;
   flock64_t fl;
 
   fl.l_type = F_WRLCK;
@@ -3298,12 +3298,12 @@ int lzfw_zero(lzfw_vfs_t *p_vfs, creden_t *cred, vnode_t *vnode,
   fl.l_start = offset;
   fl.l_len = length;
 
-  ZFS_ENTER(p_zfsvfs);
+  ZFS_ENTER(zfsvfs);
 
   int error = VOP_SPACE(vnode, F_FREESP, &fl, FWRITE|FOFFMAX,
 			offset /* XXX check */, (cred_t*)cred, NULL);
 
-  ZFS_EXIT(p_zfsvfs);
+  ZFS_EXIT(zfsvfs);
 
   return error;
 }
