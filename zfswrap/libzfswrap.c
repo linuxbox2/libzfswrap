@@ -45,7 +45,7 @@ lzfw_handle_t *lzfw_init()
   zfs_ioctl_init();
   libzfs_handle_t *p_zhd = libzfs_init();
 
-  if(!p_zhd)
+  if (!p_zhd)
     libsolkerncompat_exit();
 
   return (lzfw_handle_t*)p_zhd;
@@ -82,7 +82,7 @@ int lzfw_zpool_create(lzfw_handle_t *p_zhd, const char *psz_name,
     (psz_type == "default") ? "" : psz_type;
 
   // Create the zpool
-  if(!(pnv_root = lzwu_make_root_vdev(pool_type, ppsz_dev, i_dev,
+  if (!(pnv_root = lzwu_make_root_vdev(pool_type, ppsz_dev, i_dev,
 				      ppsz_error)))
     return 1;
 
@@ -111,11 +111,11 @@ int lzfw_zpool_destroy(lzfw_handle_t *p_zhd, const char *psz_name,
   int i_error;
 
   /** Open the zpool */
-  if((p_zpool =
+  if ((p_zpool =
       libzfs_zpool_open_canfail((libzfs_handle_t*)p_zhd,
 				psz_name, ppsz_error)) == NULL) {
     /** If the name contain a '/' redirect the user to zfs_destroy */
-    if(strchr(psz_name, '/') != NULL)
+    if (strchr(psz_name, '/') != NULL)
       *ppsz_error = "the pool name cannot contain a '/'";
     return 1;
   }
@@ -144,11 +144,11 @@ int lzfw_zpool_add(lzfw_handle_t *p_zhd, const char *psz_zpool,
   nvlist_t *pnv_root;
   int i_error;
 
-  if(!(p_zpool = libzfs_zpool_open((libzfs_handle_t*)p_zhd, psz_zpool,
+  if (!(p_zpool = libzfs_zpool_open((libzfs_handle_t*)p_zhd, psz_zpool,
 				   ppsz_error)))
     return 1;
 
-  if(!(pnv_root = lzwu_make_root_vdev(psz_type, ppsz_dev, i_dev,
+  if (!(pnv_root = lzwu_make_root_vdev(psz_type, ppsz_dev, i_dev,
 				      ppsz_error))) {
       libzfs_zpool_close(p_zpool);
       return 2;
@@ -179,12 +179,12 @@ int lzfw_zpool_remove(lzfw_handle_t *p_zhd, const char *psz_zpool,
   size_t i;
   int i_error;
 
-  if(!(p_zpool = libzfs_zpool_open((libzfs_handle_t*)p_zhd, psz_zpool,
+  if (!(p_zpool = libzfs_zpool_open((libzfs_handle_t*)p_zhd, psz_zpool,
 				   ppsz_error)))
     return 1;
 
   for(i = 0; i < i_vdevs; i++) {
-    if((i_error = libzfs_zpool_vdev_remove(p_zpool, ppsz_dev[i],
+    if ((i_error = libzfs_zpool_vdev_remove(p_zpool, ppsz_dev[i],
 					   ppsz_error)))
       break;
   }
@@ -213,11 +213,11 @@ int lzfw_zpool_attach(lzfw_handle_t *p_zhd, const char *psz_zpool,
   nvlist_t *pnv_root;
   int i_error;
 
-  if(!(p_zpool = libzfs_zpool_open((libzfs_handle_t*)p_zhd, psz_zpool,
+  if (!(p_zpool = libzfs_zpool_open((libzfs_handle_t*)p_zhd, psz_zpool,
 				   ppsz_error)))
     return 1;
 
-  if(!(pnv_root = lzwu_make_root_vdev("", &psz_new_dev, 1,
+  if (!(pnv_root = lzwu_make_root_vdev("", &psz_new_dev, 1,
 				      ppsz_error))) {
       libzfs_zpool_close(p_zpool);
       return 2;
@@ -247,7 +247,7 @@ int lzfw_zpool_detach(lzfw_handle_t *p_zhd, const char *psz_zpool,
   zpool_handle_t *p_zpool;
   int i_error;
 
-  if(!(p_zpool = libzfs_zpool_open((libzfs_handle_t*)p_zhd, psz_zpool,
+  if (!(p_zpool = libzfs_zpool_open((libzfs_handle_t*)p_zhd, psz_zpool,
 				   ppsz_error)))
     return 1;
 
@@ -273,13 +273,13 @@ static int lzfw_zpool_list_callback(zpool_handle_t *p_zpool,
 
   for(; p_zpl; p_zpl = p_zpl->pl_next) {
     boolean_t right_justify = B_FALSE;
-    if(first)
+    if (first)
       first = B_FALSE;
     else
       printf("  ");
 
-    if(p_zpl->pl_prop != ZPROP_INVAL) {
-      if(zpool_get_prop(p_zpool, p_zpl->pl_prop, property,
+    if (p_zpl->pl_prop != ZPROP_INVAL) {
+      if (zpool_get_prop(p_zpool, p_zpl->pl_prop, property,
 			sizeof(property), NULL))
 	psz_prop = "-";
       else
@@ -290,9 +290,9 @@ static int lzfw_zpool_list_callback(zpool_handle_t *p_zpool,
       psz_prop = "-";
 
     // Print the string
-    if(p_zpl->pl_next == NULL && !right_justify)
+    if (p_zpl->pl_next == NULL && !right_justify)
       printf("%s", psz_prop);
-    else if(right_justify)
+    else if (right_justify)
       printf("%*s", (int)p_zpl->pl_width, psz_prop);
     else
       printf("%-*s", (int)p_zpl->pl_width, psz_prop);
@@ -314,7 +314,7 @@ int lzfw_zpool_list(lzfw_handle_t *p_zhd, const char *psz_props,
 {
   zprop_list_t *p_zprop_list = NULL;
   static char psz_default_props[] = "name,size,allocated,free,capacity,dedupratio,health,altroot";
-  if(zprop_get_list((libzfs_handle_t*)p_zhd,
+  if (zprop_get_list((libzfs_handle_t*)p_zhd,
 		    psz_props ? psz_props : psz_default_props,
 		    &p_zprop_list, ZFS_TYPE_POOL)) {
     *ppsz_error = "unable to get the list of properties";
@@ -347,10 +347,10 @@ static int lzfw_zpool_status_callback(zpool_handle_t *zhp, void *data)
    * If we were given 'zpool status -x', only report those pools with
    * problems.
    */
-  if(reason == ZPOOL_STATUS_OK && cbp->cb_explain) {
-    if(!cbp->cb_allpools) {
+  if (reason == ZPOOL_STATUS_OK && cbp->cb_explain) {
+    if (!cbp->cb_allpools) {
 	  printf("pool '%s' is healthy\n", zpool_get_name(zhp));
-	  if(cbp->cb_first)
+	  if (cbp->cb_first)
 	    cbp->cb_first = B_FALSE;
     }
       return 0;
@@ -523,10 +523,10 @@ static int lzfw_zpool_status_callback(zpool_handle_t *zhp, void *data)
     assert(reason == ZPOOL_STATUS_OK);
   }
 
-  if(msgid != NULL)
+  if (msgid != NULL)
     printf("   see: http://www.sun.com/msg/%s\n", msgid);
 
-  if(config != NULL) {
+  if (config != NULL) {
     int namewidth;
     uint64_t nerr;
     nvlist_t **spares, **l2cache;
@@ -537,7 +537,7 @@ static int lzfw_zpool_status_callback(zpool_handle_t *zhp, void *data)
     lzwu_zpool_print_scrub_status(nvroot);
 
     namewidth = lzwu_zpool_max_width(cbp->p_zhd, zhp, nvroot, 0, 0);
-    if(namewidth < 10)
+    if (namewidth < 10)
       namewidth = 10;
 
     printf("config:\n\n");
@@ -546,18 +546,18 @@ static int lzfw_zpool_status_callback(zpool_handle_t *zhp, void *data)
     lzwu_zpool_print_status_config(cbp->p_zhd, zhp,
 				   zpool_get_name(zhp), nvroot,
 				   namewidth, 0, B_FALSE);
-    if(lzwu_num_logs(nvroot) > 0)
+    if (lzwu_num_logs(nvroot) > 0)
       lzwu_print_logs(cbp->p_zhd, zhp, nvroot, namewidth, B_TRUE);
-    if(nvlist_lookup_nvlist_array(nvroot, ZPOOL_CONFIG_L2CACHE,
+    if (nvlist_lookup_nvlist_array(nvroot, ZPOOL_CONFIG_L2CACHE,
 				  &l2cache, &nl2cache) == 0)
       lzwu_print_l2cache(cbp->p_zhd, zhp, l2cache, nl2cache,
 			 namewidth);
 
-    if(nvlist_lookup_nvlist_array(nvroot, ZPOOL_CONFIG_SPARES,
+    if (nvlist_lookup_nvlist_array(nvroot, ZPOOL_CONFIG_SPARES,
 				  &spares, &nspares) == 0)
       lzwu_print_spares(cbp->p_zhd, zhp, spares, nspares, namewidth);
 
-    if(nvlist_lookup_uint64(config, ZPOOL_CONFIG_ERRCOUNT,
+    if (nvlist_lookup_uint64(config, ZPOOL_CONFIG_ERRCOUNT,
 			    &nerr) == 0) {
       nvlist_t *nverrlist = NULL;
 
@@ -581,7 +581,7 @@ static int lzfw_zpool_status_callback(zpool_handle_t *zhp, void *data)
 
       printf("\n");
 
-      if(nerr == 0)
+      if (nerr == 0)
 	printf("errors: No known data errors\n");
       else if (!cbp->cb_verbose)
 	printf("errors: %llu data errors, use '-v' for a list\n",
@@ -590,7 +590,7 @@ static int lzfw_zpool_status_callback(zpool_handle_t *zhp, void *data)
 	lzwu_print_error_log(zhp);
     }
 
-    if(cbp->cb_dedup_stats)
+    if (cbp->cb_dedup_stats)
       lzwu_print_dedup_stats(config);
   }
   else {
@@ -635,13 +635,13 @@ static int lzfw_zfs_list_callback(zfs_handle_t *p_zfs, void *data)
   int width;
 
   for(; pl != NULL; pl = pl->pl_next) {
-    if(!first)
+    if (!first)
       printf("  ");
     else
       first = B_FALSE;
 
-    if(pl->pl_prop != ZPROP_INVAL) {
-      if(zfs_prop_get(p_zfs, pl->pl_prop, property,
+    if (pl->pl_prop != ZPROP_INVAL) {
+      if (zfs_prop_get(p_zfs, pl->pl_prop, property,
 		      sizeof (property), NULL, NULL, 0, B_FALSE) != 0)
 	propstr = "-";
       else
@@ -649,8 +649,8 @@ static int lzfw_zfs_list_callback(zfs_handle_t *p_zfs, void *data)
 
       right_justify = zfs_prop_align_right(pl->pl_prop);
     }
-    else if(zfs_prop_userquota(pl->pl_user_prop)) {
-      if(zfs_prop_get_userquota(p_zfs, pl->pl_user_prop,
+    else if (zfs_prop_userquota(pl->pl_user_prop)) {
+      if (zfs_prop_get_userquota(p_zfs, pl->pl_user_prop,
 				property, sizeof (property),
 				B_FALSE) != 0)
 	propstr = "-";
@@ -659,7 +659,7 @@ static int lzfw_zfs_list_callback(zfs_handle_t *p_zfs, void *data)
       right_justify = B_TRUE;
     }
     else {
-      if(nvlist_lookup_nvlist(userprops,
+      if (nvlist_lookup_nvlist(userprops,
 			      pl->pl_user_prop, &propval) != 0)
 	propstr = "-";
       else
@@ -675,9 +675,9 @@ static int lzfw_zfs_list_callback(zfs_handle_t *p_zfs, void *data)
      * last column and it is left-justified, don't include a width
      * format specifier.
      */
-    if((pl->pl_next == NULL && !right_justify))
+    if ((pl->pl_next == NULL && !right_justify))
       printf("%s", propstr);
-    else if(right_justify)
+    else if (right_justify)
       printf("%*s", width, propstr);
     else
       printf("%-*s", width, propstr);
@@ -701,7 +701,7 @@ int lzfw_zfs_list(lzfw_handle_t *p_zhd, const char *psz_props,
   zprop_list_t *p_zprop_list = NULL;
   static char psz_default_props[] =
     "name,used,available,referenced,mountpoint";
-  if(zprop_get_list((libzfs_handle_t*)p_zhd,
+  if (zprop_get_list((libzfs_handle_t*)p_zhd,
 		    psz_props ? psz_props : psz_default_props,
 		    &p_zprop_list, ZFS_TYPE_DATASET)) {
     *ppsz_error = "Unable to get the list of properties";
@@ -805,12 +805,12 @@ int lzfw_zfs_snapshot(lzfw_handle_t *p_zhd, const char *psz_zfs,
 
   /**@TODO: check the name of the filesystem and snapshot*/
 
-  if(!(p_zfs = libzfs_zfs_open((libzfs_handle_t*)p_zhd, psz_zfs,
+  if (!(p_zfs = libzfs_zfs_open((libzfs_handle_t*)p_zhd, psz_zfs,
 			       ZFS_TYPE_FILESYSTEM | ZFS_TYPE_VOLUME,
 			       ppsz_error)))
     return ENOENT;
 
-  if((i_error = dmu_objset_snapshot(p_zfs->zfs_name,
+  if ((i_error = dmu_objset_snapshot(p_zfs->zfs_name,
 				    (char*)psz_snapshot, NULL, 0)))
     *ppsz_error = "Unable to create the snapshot";
 
@@ -835,16 +835,16 @@ int lzfw_zfs_snapshot_destroy(lzfw_handle_t *p_zhd,
   int i_error;
 
   /** Open the zpool */
-  if((p_zpool = libzfs_zpool_open_canfail((libzfs_handle_t*)p_zhd,
+  if ((p_zpool = libzfs_zpool_open_canfail((libzfs_handle_t*)p_zhd,
 					  psz_zfs,
 					  ppsz_error)) == NULL) {
       /** If the name contain a '/' redirect the user to zfs_destroy */
-      if(strchr(psz_zfs, '/') != NULL)
+      if (strchr(psz_zfs, '/') != NULL)
 	*ppsz_error = "the pool name cannot contain a '/'";
       return 1;
     }
 
-  if((i_error = dmu_snapshots_destroy(psz_zfs, psz_snapshot, B_TRUE)))
+  if ((i_error = dmu_snapshots_destroy(psz_zfs, psz_snapshot, B_TRUE)))
     *ppsz_error = "Unable to destroy the snapshot";
 
   libzfs_zpool_close(p_zpool);
@@ -961,7 +961,7 @@ int lzfw_zfs_list_snapshot(lzfw_handle_t *p_zhd, const char *psz_zfs,
   zprop_list_t *p_zprop_list = NULL;
   static char psz_default_props[] =
     "name,used,available,referenced,mountpoint";
-  if(zprop_get_list((libzfs_handle_t*)p_zhd, psz_default_props,
+  if (zprop_get_list((libzfs_handle_t*)p_zhd, psz_default_props,
 		    &p_zprop_list, ZFS_TYPE_DATASET)) {
       *ppsz_error = "Unable to get the list of properties";
       return 1;
@@ -1005,7 +1005,7 @@ int lzfw_zfs_get_list_snapshots(lzfw_handle_t *p_zhd,
 				const char **ppsz_error)
 {
   callback_data_t cb = { .ppsz_names = NULL, .i_num = 0 };
-  if(libzfs_zfs_snapshot_iter((libzfs_handle_t*)p_zhd, psz_zfs,
+  if (libzfs_zfs_snapshot_iter((libzfs_handle_t*)p_zhd, psz_zfs,
 			      lzfw_zfs_get_list_snapshots_callback,
 			      &cb, ppsz_error))
     return -1;
@@ -1026,7 +1026,7 @@ vfs_t *lzfw_mount(const char *psz_zpool, const char *psz_dir,
 		       const char *psz_options)
 {
   vfs_t *p_vfs = calloc(1, sizeof(vfs_t));
-  if(!p_vfs)
+  if (!p_vfs)
     return NULL;
 
   VFS_INIT(p_vfs, zfs_vfsops, 0);
@@ -1045,7 +1045,7 @@ vfs_t *lzfw_mount(const char *psz_zpool, const char *psz_dir,
 
   cred_t cred = { .cr_uid = 0, .cr_gid = 0 };
   int i_error = VFS_MOUNT(p_vfs, rootdir, &uap, &cred);
-  if(i_error)
+  if (i_error)
     {
       free(p_vfs);
       return NULL;
@@ -1067,7 +1067,7 @@ int lzfw_getroot(vfs_t *p_vfs, inogen_t *root)
   int i_error;
 
   ZFS_ENTER(zfsvfs);
-  if((i_error = zfs_zget(zfsvfs, 3, &znode, B_TRUE))) {
+  if ((i_error = zfs_zget(zfsvfs, 3, &znode, B_TRUE))) {
       ZFS_EXIT(zfsvfs);
       return i_error;
   }
@@ -1096,7 +1096,7 @@ int lzfw_umount(vfs_t *p_vfs, int b_force)
   cred_t cred = { .cr_uid = 0, .cr_gid = 0 };
 
   VFS_SYNC(p_vfs, 0, &cred);
-  if((i_error = VFS_UNMOUNT(p_vfs,
+  if ((i_error = VFS_UNMOUNT(p_vfs,
 			    b_force ? MS_FORCE : 0, &cred))) {
     return i_error;
   }
@@ -1116,7 +1116,7 @@ int lzfw_statfs(vfs_t *p_vfs, struct statvfs *p_statvfs)
   //FIXME: no ZFS_ENTER ??
   struct statvfs64 zfs_stats = { 0 };
   int i_error;
-  if((i_error = VFS_STATVFS(p_vfs, &zfs_stats)))
+  if ((i_error = VFS_STATVFS(p_vfs, &zfs_stats)))
     return i_error;
 
   p_statvfs->f_bsize = zfs_stats.f_frsize;
@@ -1147,7 +1147,7 @@ int lzfw_statfs(vfs_t *p_vfs, struct statvfs *p_statvfs)
 int lzfw_lookup(vfs_t *p_vfs, creden_t *p_cred, inogen_t parent,
 		const char *psz_name, inogen_t *object, int *p_type)
 {
-  if(strlen(psz_name) >= MAXNAMELEN)
+  if (strlen(psz_name) >= MAXNAMELEN)
     return -1;
 
   zfsvfs_t *zfsvfs = p_vfs->vfs_data;
@@ -1156,7 +1156,7 @@ int lzfw_lookup(vfs_t *p_vfs, creden_t *p_cred, inogen_t parent,
 
   ZFS_ENTER(zfsvfs);
 
-  if((i_error = zfs_zget(zfsvfs, parent.inode, &parent_znode,
+  if ((i_error = zfs_zget(zfsvfs, parent.inode, &parent_znode,
 			 B_TRUE))) {
     ZFS_EXIT(zfsvfs);
     return i_error;
@@ -1165,7 +1165,7 @@ int lzfw_lookup(vfs_t *p_vfs, creden_t *p_cred, inogen_t parent,
   ASSERT(parent_znode != NULL);
 
   // Check the parent generation
-  if(parent_znode->z_phys->zp_gen != parent.generation) {
+  if (parent_znode->z_phys->zp_gen != parent.generation) {
     VN_RELE(ZTOV(parent_znode));
     ZFS_EXIT(zfsvfs);
     return ENOENT;
@@ -1175,7 +1175,7 @@ int lzfw_lookup(vfs_t *p_vfs, creden_t *p_cred, inogen_t parent,
   ASSERT(parent_vnode != NULL);
 
   vnode_t *vnode = NULL;
-  if((i_error = VOP_LOOKUP(parent_vnode, (char*)psz_name, &vnode,
+  if ((i_error = VOP_LOOKUP(parent_vnode, (char*)psz_name, &vnode,
 			   NULL, 0, NULL, (cred_t*)p_cred, NULL, NULL,
 			   NULL))) {
     VN_RELE(parent_vnode);
@@ -1185,7 +1185,7 @@ int lzfw_lookup(vfs_t *p_vfs, creden_t *p_cred, inogen_t parent,
 
   object->inode = VTOZ(vnode)->z_id;
   object->generation = VTOZ(vnode)->z_phys->zp_gen;
-  *p_type = VTTOIF(vnode->v_type);
+  *p_type = VTTOIF (vnode->v_type);
 
   VN_RELE(vnode);
   VN_RELE(parent_vnode);
@@ -1226,7 +1226,7 @@ int lzfw_lookupnameat(vfs_t *p_vfs, creden_t *p_cred,
 
   object->inode = VTOZ(vnode)->z_id;
   object->generation = VTOZ(vnode)->z_phys->zp_gen;
-  *p_type = VTTOIF(vnode->v_type);
+  *p_type = VTTOIF (vnode->v_type);
 
   VN_RELE(vnode);
   ZFS_EXIT(zfsvfs);
@@ -1250,14 +1250,14 @@ int lzfw_access(vfs_t *p_vfs, creden_t *p_cred, inogen_t object,
   int i_error;
 
   ZFS_ENTER(zfsvfs);
-  if((i_error = zfs_zget(zfsvfs, object.inode, &znode, B_TRUE))) {
+  if ((i_error = zfs_zget(zfsvfs, object.inode, &znode, B_TRUE))) {
     ZFS_EXIT(zfsvfs);
     return i_error;
   }
   ASSERT(znode);
 
   // Check the generation
-  if(znode->z_phys->zp_gen != object.generation) {
+  if (znode->z_phys->zp_gen != object.generation) {
     VN_RELE(ZTOV(znode));
     ZFS_EXIT(zfsvfs);
     return ENOENT;
@@ -1267,11 +1267,11 @@ int lzfw_access(vfs_t *p_vfs, creden_t *p_cred, inogen_t object,
   ASSERT(vnode);
 
   int mode = 0;
-  if(mask & R_OK)
+  if (mask & R_OK)
     mode |= VREAD;
-  if(mask & W_OK)
+  if (mask & W_OK)
     mode |= VWRITE;
-  if(mask & X_OK)
+  if (mask & X_OK)
     mode |= VEXEC;
 
   i_error = VOP_ACCESS(vnode, mode, 0, (cred_t*)p_cred, NULL);
@@ -1301,14 +1301,14 @@ int lzfw_open(vfs_t *p_vfs, creden_t *p_cred, inogen_t object,
   znode_t *znode;
 
   ZFS_ENTER(zfsvfs);
-  if((i_error = zfs_zget(zfsvfs, object.inode, &znode, B_FALSE))) {
+  if ((i_error = zfs_zget(zfsvfs, object.inode, &znode, B_FALSE))) {
     ZFS_EXIT(zfsvfs);
     return i_error;
   }
   ASSERT(znode);
   // Check the generation
 
-  if(znode->z_phys->zp_gen != object.generation) {
+  if (znode->z_phys->zp_gen != object.generation) {
     VN_RELE(ZTOV(znode));
     ZFS_EXIT(zfsvfs);
     return ENOENT;
@@ -1320,7 +1320,7 @@ int lzfw_open(vfs_t *p_vfs, creden_t *p_cred, inogen_t object,
   vnode_t *old_vnode = vnode;
 
   // Check errors
-  if((i_error = VOP_OPEN(&vnode, flags, (cred_t*)p_cred, NULL))) {
+  if ((i_error = VOP_OPEN(&vnode, flags, (cred_t*)p_cred, NULL))) {
     //FIXME: memleak ?
     ZFS_EXIT(zfsvfs);
     return i_error;
@@ -1425,7 +1425,7 @@ int lzfw_create(vfs_t *p_vfs, creden_t *p_cred, inogen_t parent,
   znode_t *parent_znode;
 
   ZFS_ENTER(zfsvfs);
-  if((i_error = zfs_zget(zfsvfs, parent.inode, &parent_znode,
+  if ((i_error = zfs_zget(zfsvfs, parent.inode, &parent_znode,
 			 B_FALSE))) {
     ZFS_EXIT(zfsvfs);
     return i_error;
@@ -1433,7 +1433,7 @@ int lzfw_create(vfs_t *p_vfs, creden_t *p_cred, inogen_t parent,
   ASSERT(parent_znode);
 
   // Check the generation
-  if(parent_znode->z_phys->zp_gen != parent.generation) {
+  if (parent_znode->z_phys->zp_gen != parent.generation) {
     VN_RELE(ZTOV(parent_znode));
       ZFS_EXIT(zfsvfs);
       return ENOENT;
@@ -1449,7 +1449,7 @@ int lzfw_create(vfs_t *p_vfs, creden_t *p_cred, inogen_t parent,
 
   vnode_t *new_vnode;
 
-  if((i_error = VOP_CREATE(parent_vnode, (char*)psz_filename, &vattr,
+  if ((i_error = VOP_CREATE(parent_vnode, (char*)psz_filename, &vattr,
 			   NONEXCL, mode, &new_vnode, (cred_t*)p_cred,
 			   0, NULL, NULL))) {
     VN_RELE(parent_vnode);
@@ -1496,7 +1496,7 @@ int lzfw_createat(vfs_t *vfs, creden_t *cred,
   vattr.va_mask = AT_TYPE | AT_MODE;
 
   vnode_t *new_vnode;
-  if((error = VOP_CREATE(parent, (char*)psz_filename, &vattr,
+  if ((error = VOP_CREATE(parent, (char*)psz_filename, &vattr,
 			 NONEXCL, mode, &new_vnode, (cred_t*)cred, 0,
 			 NULL, NULL))) {
     ZFS_EXIT(zfsvfs);
@@ -1529,14 +1529,14 @@ int lzfw_opendir(vfs_t *p_vfs, creden_t *p_cred,
   znode_t *znode;
 
   ZFS_ENTER(zfsvfs);
-  if((i_error = zfs_zget(zfsvfs, directory.inode, &znode, B_TRUE))) {
+  if ((i_error = zfs_zget(zfsvfs, directory.inode, &znode, B_TRUE))) {
     ZFS_EXIT(zfsvfs);
     return i_error;
   }
   ASSERT(znode);
 
   // Check the generation
-  if(znode->z_phys->zp_gen != directory.generation) {
+  if (znode->z_phys->zp_gen != directory.generation) {
     VN_RELE(ZTOV(znode));
     ZFS_EXIT(zfsvfs);
     return ENOENT;
@@ -1546,14 +1546,14 @@ int lzfw_opendir(vfs_t *p_vfs, creden_t *p_cred,
   ASSERT(vnode != NULL);
 
   // Check that we have a directory
-  if(vnode->v_type != VDIR) {
+  if (vnode->v_type != VDIR) {
     VN_RELE(vnode);
     ZFS_EXIT(zfsvfs);
     return ENOTDIR;
   }
 
   vnode_t *old_vnode = vnode;
-  if((i_error = VOP_OPEN(&vnode, FREAD, (cred_t*)p_cred, NULL))) {
+  if ((i_error = VOP_OPEN(&vnode, FREAD, (cred_t*)p_cred, NULL))) {
     VN_RELE(old_vnode);
     ZFS_EXIT(zfsvfs);
     return i_error;
@@ -1583,7 +1583,7 @@ int lzfw_readdir(vfs_t *p_vfs, creden_t *p_cred,
   zfsvfs_t *zfsvfs = p_vfs->vfs_data;
 
   // Check that the vnode is a directory
-  if(vnode->v_type != VDIR)
+  if (vnode->v_type != VDIR)
     return ENOTDIR;
 
   iovec_t iovec;
@@ -1603,18 +1603,18 @@ int lzfw_readdir(vfs_t *p_vfs, creden_t *p_cred,
 
   ZFS_ENTER(zfsvfs);
   size_t index = 0;
-  while(index < size) {
+  while (index < size) {
     iovec.iov_base = entry.buf;
     iovec.iov_len = sizeof(entry.buf);
     uio.uio_resid = iovec.iov_len;
     uio.uio_loffset = next_entry;
 
     /* TODO: do only one call for more than one entry ? */
-    if(VOP_READDIR(vnode, &uio, (cred_t*)p_cred, &eofp, NULL, 0))
+    if (VOP_READDIR(vnode, &uio, (cred_t*)p_cred, &eofp, NULL, 0))
       break;
 
     // End of directory ?
-    if(iovec.iov_base == entry.buf)
+    if (iovec.iov_base == entry.buf)
       break;
 
     // Copy the entry name
@@ -1633,7 +1633,7 @@ int lzfw_readdir(vfs_t *p_vfs, creden_t *p_cred,
   ZFS_EXIT(zfsvfs);
 
   // Set the last element to NULL if we end before size elements
-  if(index < size) {
+  if (index < size) {
     p_entries[index].psz_filename[0] = '\0';
     *cookie = 0;
   }
@@ -1688,7 +1688,7 @@ int lzfw_dir_iter(vfs_t *vfs, creden_t *cred, vnode_t *vnode,
 {
   zfsvfs_t *zfsvfs = ((vfs_t*)vfs)->vfs_data;
 
-  if(vnode->v_type != VDIR)
+  if (vnode->v_type != VDIR)
     return ENOTDIR;
 
   off_t next_entry;
@@ -1814,12 +1814,12 @@ int lzfw_stat(vfs_t *p_vfs, creden_t *p_cred,
   ZFS_ENTER(zfsvfs);
   int i_error = VOP_GETATTR(vnode, &vattr, 0, (cred_t*)p_cred, NULL);
   ZFS_EXIT(zfsvfs);
-  if(i_error)
+  if (i_error)
     return i_error;
 
   p_stat->st_dev = vattr.va_fsid;                      
   p_stat->st_ino = vattr.va_nodeid;
-  p_stat->st_mode = VTTOIF(vattr.va_type) | vattr.va_mode;
+  p_stat->st_mode = VTTOIF (vattr.va_type) | vattr.va_mode;
   p_stat->st_nlink = vattr.va_nlink;
   p_stat->st_uid = vattr.va_uid;
   p_stat->st_gid = vattr.va_gid;
@@ -1842,14 +1842,14 @@ static int getattr_helper(vfs_t *p_vfs, creden_t *p_cred,
   int i_error;
   znode_t *znode;
 
-  if((i_error = zfs_zget(zfsvfs, object.inode, &znode, B_FALSE)))
+  if ((i_error = zfs_zget(zfsvfs, object.inode, &znode, B_FALSE)))
     return i_error;
   ASSERT(znode);
 
   // Check or set the generation
-  if(p_gen)
+  if (p_gen)
     *p_gen = znode->z_phys->zp_gen;
-  else if(znode->z_phys->zp_gen != object.generation)
+  else if (znode->z_phys->zp_gen != object.generation)
     {
       VN_RELE(ZTOV(znode));
       return ENOENT;
@@ -1862,10 +1862,10 @@ static int getattr_helper(vfs_t *p_vfs, creden_t *p_cred,
   vattr.va_mask = AT_ALL;
   memset(p_stat, 0, sizeof(*p_stat));
 
-  if(p_type)
-    *p_type = VTTOIF(vnode->v_type);
+  if (p_type)
+    *p_type = VTTOIF (vnode->v_type);
 
-  if((i_error = VOP_GETATTR(vnode, &vattr, 0, (cred_t*)p_cred,
+  if ((i_error = VOP_GETATTR(vnode, &vattr, 0, (cred_t*)p_cred,
 			    NULL))) {
     VN_RELE(vnode);
     return i_error;
@@ -1874,7 +1874,7 @@ static int getattr_helper(vfs_t *p_vfs, creden_t *p_cred,
 
   p_stat->st_dev = vattr.va_fsid;
   p_stat->st_ino = vattr.va_nodeid;
-  p_stat->st_mode = VTTOIF(vattr.va_type) | vattr.va_mode;
+  p_stat->st_mode = VTTOIF (vattr.va_type) | vattr.va_mode;
   p_stat->st_nlink = vattr.va_nlink;
   p_stat->st_uid = vattr.va_uid;
   p_stat->st_gid = vattr.va_gid;
@@ -1931,7 +1931,7 @@ int lzfw_setattr(vfs_t *p_vfs, creden_t *p_cred, inogen_t object,
   int update_time = 0;
 
   ZFS_ENTER(zfsvfs);
-  if((i_error = zfs_zget(zfsvfs, object.inode, &znode, B_TRUE)))
+  if ((i_error = zfs_zget(zfsvfs, object.inode, &znode, B_TRUE)))
     {
       ZFS_EXIT(zfsvfs);
       return i_error;
@@ -1939,7 +1939,7 @@ int lzfw_setattr(vfs_t *p_vfs, creden_t *p_cred, inogen_t object,
   ASSERT(znode);
 
   // Check the generation
-  if(znode->z_phys->zp_gen != object.generation) {
+  if (znode->z_phys->zp_gen != object.generation) {
     VN_RELE(ZTOV(znode));
     ZFS_EXIT(zfsvfs);
     return ENOENT;
@@ -1949,24 +1949,24 @@ int lzfw_setattr(vfs_t *p_vfs, creden_t *p_cred, inogen_t object,
   ASSERT(vnode);
 
   vattr_t vattr = { 0 };
-  if(flags & LZFSW_ATTR_MODE) {
+  if (flags & LZFSW_ATTR_MODE) {
     vattr.va_mask |= AT_MODE;
     vattr.va_mode = p_stat->st_mode;
   }
-  if(flags & LZFSW_ATTR_UID) {
+  if (flags & LZFSW_ATTR_UID) {
     vattr.va_mask |= AT_UID;
     vattr.va_uid = p_stat->st_uid;
   }
-  if(flags & LZFSW_ATTR_GID) {
+  if (flags & LZFSW_ATTR_GID) {
     vattr.va_mask |= AT_GID;
     vattr.va_gid = p_stat->st_gid;
   }
-  if(flags & LZFSW_ATTR_ATIME) {
+  if (flags & LZFSW_ATTR_ATIME) {
     vattr.va_mask |= AT_ATIME;
     TIME_TO_TIMESTRUC(p_stat->st_atime, &vattr.va_atime);
     update_time = ATTR_UTIME;
   }
-  if(flags & LZFSW_ATTR_MTIME) {
+  if (flags & LZFSW_ATTR_MTIME) {
     vattr.va_mask |= AT_MTIME;
     TIME_TO_TIMESTRUC(p_stat->st_mtime, &vattr.va_mtime);
     update_time = ATTR_UTIME;
@@ -1994,12 +1994,12 @@ static int xattr_helper(zfsvfs_t *zfsvfs, creden_t *p_cred,
   znode_t *znode;
   int i_error;
 
-  if((i_error = zfs_zget(zfsvfs, object.inode, &znode, B_TRUE)))
+  if ((i_error = zfs_zget(zfsvfs, object.inode, &znode, B_TRUE)))
     return i_error;
   ASSERT(znode);
 
   // Check the generation
-  if(znode->z_phys->zp_gen != object.generation) {
+  if (znode->z_phys->zp_gen != object.generation) {
     VN_RELE(ZTOV(znode));
     return ENOENT;
   }
@@ -2013,8 +2013,8 @@ static int xattr_helper(zfsvfs_t *zfsvfs, creden_t *p_cred,
 		       (cred_t*)p_cred, NULL, NULL, NULL);
   VN_RELE(vnode);
 
-  if(i_error || !xattr_vnode) {
-    if(xattr_vnode)
+  if (i_error || !xattr_vnode) {
+    if (xattr_vnode)
       VN_RELE(xattr_vnode);
     return i_error ? i_error : ENOSYS;
   }
@@ -2040,13 +2040,13 @@ int lzfw_listxattr(vfs_t *p_vfs, creden_t *p_cred,
   vnode_t *vnode;
 
   ZFS_ENTER(zfsvfs);
-  if((i_error = xattr_helper(zfsvfs, p_cred, object, &vnode))) {
+  if ((i_error = xattr_helper(zfsvfs, p_cred, object, &vnode))) {
     ZFS_EXIT(zfsvfs);
     return i_error;
   }
 
   // Open the speudo directory
-  if((i_error = VOP_OPEN(&vnode, FREAD, (cred_t*)p_cred, NULL))) {
+  if ((i_error = VOP_OPEN(&vnode, FREAD, (cred_t*)p_cred, NULL))) {
     VN_RELE(vnode);
     ZFS_EXIT(zfsvfs);
     return i_error;
@@ -2070,13 +2070,13 @@ int lzfw_listxattr(vfs_t *p_vfs, creden_t *p_cred,
   int eofp = 0;
   off_t next = 0;
 
-  while(1) {
+  while (1) {
     iovec.iov_base = entry.buf;
     iovec.iov_len = sizeof(entry.buf);
     uio.uio_resid = iovec.iov_len;
     uio.uio_loffset = next;
 
-    if((i_error = VOP_READDIR(vnode, &uio, (cred_t*)p_cred, &eofp,
+    if ((i_error = VOP_READDIR(vnode, &uio, (cred_t*)p_cred, &eofp,
 			      NULL, 0))) {
       VOP_CLOSE(vnode, FREAD, 1, (offset_t)0, (cred_t*)p_cred, NULL);
       VN_RELE(vnode);
@@ -2084,13 +2084,13 @@ int lzfw_listxattr(vfs_t *p_vfs, creden_t *p_cred,
       return i_error;
     }
 
-    if(iovec.iov_base == entry.buf)
+    if (iovec.iov_base == entry.buf)
       break;
 
     next = entry.dirent.d_off;
     // Skip '.' and '..'
     char *s = entry.dirent.d_name;
-    if(*s == '.' && (s[1] == 0 || (s[1] == '.' && s[2] == 0)))
+    if (*s == '.' && (s[1] == 0 || (s[1] == '.' && s[2] == 0)))
       continue;
 
     size_t length = strlen(s);
@@ -2126,13 +2126,13 @@ int lzfw_listxattr2(vfs_t *p_vfs, creden_t *p_cred,
   vnode_t *vnode;
 
   ZFS_ENTER(zfsvfs);
-  if((i_error = xattr_helper(zfsvfs, p_cred, object, &vnode))) {
+  if ((i_error = xattr_helper(zfsvfs, p_cred, object, &vnode))) {
     ZFS_EXIT(zfsvfs);
     return i_error;
   }
 
   // Open the speudo directory
-  if((i_error = VOP_OPEN(&vnode, FREAD, (cred_t*)p_cred, NULL))) {
+  if ((i_error = VOP_OPEN(&vnode, FREAD, (cred_t*)p_cred, NULL))) {
     VN_RELE(vnode);
     ZFS_EXIT(zfsvfs);
     return i_error;
@@ -2156,13 +2156,13 @@ int lzfw_listxattr2(vfs_t *p_vfs, creden_t *p_cred,
 
   inogen_t obj;
 
-  while(1) {
+  while (1) {
     iovec.iov_base = entry.buf;
     iovec.iov_len = sizeof(entry.buf);
     uio.uio_resid = iovec.iov_len;
     uio.uio_loffset = next;
 
-    if((i_error = VOP_READDIR(vnode, &uio, (cred_t*)p_cred, &eofp,
+    if ((i_error = VOP_READDIR(vnode, &uio, (cred_t*)p_cred, &eofp,
 			      NULL, 0))) {
       VOP_CLOSE(vnode, FREAD, 1, (offset_t)0, (cred_t*)p_cred, NULL);
       VN_RELE(vnode);
@@ -2170,13 +2170,13 @@ int lzfw_listxattr2(vfs_t *p_vfs, creden_t *p_cred,
       return i_error;
     }
 
-    if(iovec.iov_base == entry.buf)
+    if (iovec.iov_base == entry.buf)
       break;
 
     next = entry.dirent.d_off;
     // Skip '.' and '..'
     char *s = entry.dirent.d_name;
-    if(*s == '.' && (s[1] == 0 || (s[1] == '.' && s[2] == 0)))
+    if (*s == '.' && (s[1] == 0 || (s[1] == '.' && s[2] == 0)))
       continue;
 
     obj.inode = VTOZ(vnode)->z_id;
@@ -2211,7 +2211,7 @@ int lzfw_setxattr(vfs_t *p_vfs, creden_t *p_cred, inogen_t object,
   vnode_t *vnode;
 
   ZFS_ENTER(zfsvfs);
-  if((i_error = xattr_helper(zfsvfs, p_cred, object, &vnode))) {
+  if ((i_error = xattr_helper(zfsvfs, p_cred, object, &vnode))) {
     ZFS_EXIT(zfsvfs);
     return i_error;
   }
@@ -2224,7 +2224,7 @@ int lzfw_setxattr(vfs_t *p_vfs, creden_t *p_cred, inogen_t object,
   vattr.va_size = 0;
 
   vnode_t *pseudo_vnode;
-  if((i_error = VOP_CREATE(vnode, (char*)psz_key, &vattr, NONEXCL,
+  if ((i_error = VOP_CREATE(vnode, (char*)psz_key, &vattr, NONEXCL,
 			   VWRITE, &pseudo_vnode, (cred_t*)p_cred, 0,
 			   NULL, NULL))) {
     VN_RELE(vnode);
@@ -2234,7 +2234,8 @@ int lzfw_setxattr(vfs_t *p_vfs, creden_t *p_cred, inogen_t object,
 
   // Open the key-file
   vnode_t *key_vnode = pseudo_vnode;
-  if((i_error = VOP_OPEN(&key_vnode, FWRITE, (cred_t*)p_cred, NULL))) {
+  if ((i_error = VOP_OPEN(&key_vnode, FWRITE, (cred_t*)p_cred,
+			  NULL))) {
     VN_RELE(pseudo_vnode);
     ZFS_EXIT(zfsvfs);
     return i_error;
@@ -2358,14 +2359,14 @@ int lzfw_getxattr(vfs_t *p_vfs, creden_t *p_cred,
   char *psz_value;
 
   ZFS_ENTER(zfsvfs);
-  if((i_error = xattr_helper(zfsvfs, p_cred, object, &vnode))) {
+  if ((i_error = xattr_helper(zfsvfs, p_cred, object, &vnode))) {
     ZFS_EXIT(zfsvfs);
     return i_error;
   }
 
   // Lookup for the right file
   vnode_t *key_vnode;
-  if((i_error = VOP_LOOKUP(vnode, (char*)psz_key, &key_vnode, NULL,
+  if ((i_error = VOP_LOOKUP(vnode, (char*)psz_key, &key_vnode, NULL,
 			   0, NULL, (cred_t*)p_cred, NULL, NULL,
 			   NULL))) {
     VN_RELE(vnode);
@@ -2377,14 +2378,14 @@ int lzfw_getxattr(vfs_t *p_vfs, creden_t *p_cred,
   // Get the size of the value
   vattr_t vattr = { 0 };
   vattr.va_mask = AT_STAT | AT_NBLOCKS | AT_BLKSIZE | AT_SIZE;
-  if((i_error = VOP_GETATTR(key_vnode, &vattr, 0, (cred_t*)p_cred,
+  if ((i_error = VOP_GETATTR(key_vnode, &vattr, 0, (cred_t*)p_cred,
 			    NULL))) {
     VN_RELE(key_vnode);
     ZFS_EXIT(zfsvfs);
     return i_error;
   }
 
-  if((i_error = VOP_OPEN(&key_vnode, FREAD, (cred_t*)p_cred, NULL))) {
+  if ((i_error = VOP_OPEN(&key_vnode, FREAD, (cred_t*)p_cred, NULL))) {
     VN_RELE(key_vnode);
     ZFS_EXIT(zfsvfs);
     return i_error;
@@ -2411,7 +2412,7 @@ int lzfw_getxattr(vfs_t *p_vfs, creden_t *p_cred,
   VN_RELE(key_vnode);
   ZFS_EXIT(zfsvfs);
 
-  if(!i_error) {
+  if (!i_error) {
     psz_value[vattr.va_size] = '\0';
     *ppsz_value = psz_value;
   }
@@ -2526,7 +2527,7 @@ int lzfw_removexattr(vfs_t *p_vfs, creden_t *p_cred,
   vnode_t *vnode;
 
   ZFS_ENTER(zfsvfs);
-  if((i_error = xattr_helper(zfsvfs, p_cred, object, &vnode))) {
+  if ((i_error = xattr_helper(zfsvfs, p_cred, object, &vnode))) {
     ZFS_EXIT(zfsvfs);
     return i_error;
   }
@@ -2567,7 +2568,7 @@ ssize_t lzfw_read(vfs_t *p_vfs, creden_t *p_cred,
   iovec.iov_len = size;
   uio.uio_resid = iovec.iov_len;
   uio.uio_loffset = offset;
-  if(behind)
+  if (behind)
     uio.uio_loffset += VTOZ(vnode)->z_phys->zp_size;
 
   ZFS_ENTER(zfsvfs);
@@ -2575,7 +2576,7 @@ ssize_t lzfw_read(vfs_t *p_vfs, creden_t *p_cred,
   ZFS_EXIT(zfsvfs);
 
   /* XXXX return from VOP_READ is always discarded? */
-  if(offset == uio.uio_loffset)
+  if (offset == uio.uio_loffset)
     return 0;
   else
     return size;
@@ -2655,7 +2656,7 @@ ssize_t lzfw_write(vfs_t *p_vfs, creden_t *p_cred,
   iovec.iov_len = size;
   uio.uio_resid = iovec.iov_len;
   uio.uio_loffset = offset;
-  if(behind)
+  if (behind)
     uio.uio_loffset += VTOZ(vnode)->z_phys->zp_size;
 
   ZFS_ENTER(zfsvfs);
@@ -2753,7 +2754,7 @@ int lzfw_mkdir(vfs_t *p_vfs, creden_t *p_cred, inogen_t parent,
   znode_t *parent_znode;
 
   ZFS_ENTER(zfsvfs);
-  if((i_error = zfs_zget(zfsvfs, parent.inode, &parent_znode,
+  if ((i_error = zfs_zget(zfsvfs, parent.inode, &parent_znode,
 			 B_FALSE))) {
     ZFS_EXIT(zfsvfs);
     return i_error;
@@ -2761,7 +2762,7 @@ int lzfw_mkdir(vfs_t *p_vfs, creden_t *p_cred, inogen_t parent,
   ASSERT(parent_znode != NULL);
 
   // Check the generation
-  if(parent_znode->z_phys->zp_gen != parent.generation) {
+  if (parent_znode->z_phys->zp_gen != parent.generation) {
     VN_RELE(ZTOV(parent_znode));
     ZFS_EXIT(zfsvfs);
     return ENOENT;
@@ -2776,7 +2777,7 @@ int lzfw_mkdir(vfs_t *p_vfs, creden_t *p_cred, inogen_t parent,
   vattr.va_mode = mode & PERMMASK;
   vattr.va_mask = AT_TYPE | AT_MODE;
 
-  if((i_error = VOP_MKDIR(parent_vnode, (char*)psz_name, &vattr,
+  if ((i_error = VOP_MKDIR(parent_vnode, (char*)psz_name, &vattr,
 			  &vnode, (cred_t*)p_cred, NULL, 0, NULL))) {
     VN_RELE(parent_vnode);
     ZFS_EXIT(zfsvfs);
@@ -2853,7 +2854,7 @@ int lzfw_rmdir(vfs_t *p_vfs, creden_t *p_cred, inogen_t parent,
   znode_t *parent_znode;
 
   ZFS_ENTER(zfsvfs);
-  if((i_error = zfs_zget(zfsvfs, parent.inode, &parent_znode,
+  if ((i_error = zfs_zget(zfsvfs, parent.inode, &parent_znode,
 			 B_FALSE))) {
     ZFS_EXIT(zfsvfs);
     return i_error;
@@ -2861,7 +2862,7 @@ int lzfw_rmdir(vfs_t *p_vfs, creden_t *p_cred, inogen_t parent,
   ASSERT(parent_znode);
 
   // Check the generation
-  if(parent_znode->z_phys->zp_gen != parent.generation) {
+  if (parent_znode->z_phys->zp_gen != parent.generation) {
     VN_RELE(ZTOV(parent_znode));
     ZFS_EXIT(zfsvfs);
     return ENOENT;
@@ -2898,7 +2899,7 @@ int lzfw_symlink(vfs_t *p_vfs, creden_t *p_cred, inogen_t parent,
   znode_t *parent_znode;
 
   ZFS_ENTER(zfsvfs);
-  if((i_error = zfs_zget(zfsvfs, parent.inode, &parent_znode,
+  if ((i_error = zfs_zget(zfsvfs, parent.inode, &parent_znode,
 			 B_FALSE))) {
     ZFS_EXIT(zfsvfs);
     return i_error;
@@ -2906,7 +2907,7 @@ int lzfw_symlink(vfs_t *p_vfs, creden_t *p_cred, inogen_t parent,
   ASSERT(parent_znode != NULL);
 
   // Check generation
-  if(parent_znode->z_phys->zp_gen != parent.generation) {
+  if (parent_znode->z_phys->zp_gen != parent.generation) {
     VN_RELE(ZTOV(parent_znode));
     ZFS_EXIT(zfsvfs);
     return ENOENT;
@@ -2920,7 +2921,7 @@ int lzfw_symlink(vfs_t *p_vfs, creden_t *p_cred, inogen_t parent,
   vattr.va_mode = 0777;
   vattr.va_mask = AT_TYPE | AT_MODE;
 
-  if((i_error = VOP_SYMLINK(parent_vnode, (char*)psz_name, &vattr,
+  if ((i_error = VOP_SYMLINK(parent_vnode, (char*)psz_name, &vattr,
 			    (char*) psz_link, (cred_t*)p_cred, NULL,
 			    0))) {
     VN_RELE(parent_vnode);
@@ -2929,7 +2930,7 @@ int lzfw_symlink(vfs_t *p_vfs, creden_t *p_cred, inogen_t parent,
   }
 
   vnode_t *vnode;
-  if((i_error = VOP_LOOKUP(parent_vnode, (char*) psz_name, &vnode,
+  if ((i_error = VOP_LOOKUP(parent_vnode, (char*) psz_name, &vnode,
 			   NULL, 0, NULL, (cred_t*)p_cred, NULL, NULL,
 			   NULL))) {
     VN_RELE(parent_vnode);
@@ -2966,14 +2967,14 @@ int lzfw_readlink(vfs_t *p_vfs, creden_t *p_cred,
 
   ZFS_ENTER(zfsvfs);
 
-  if((i_error = zfs_zget(zfsvfs, symlink.inode, &znode, B_FALSE))) {
+  if ((i_error = zfs_zget(zfsvfs, symlink.inode, &znode, B_FALSE))) {
     ZFS_EXIT(zfsvfs);
     return i_error;
   }
   ASSERT(znode != NULL);
 
   // Check generation
-  if(znode->z_phys->zp_gen != symlink.generation) {
+  if (znode->z_phys->zp_gen != symlink.generation) {
     VN_RELE(ZTOV(znode));
     ZFS_EXIT(zfsvfs);
     return ENOENT;
@@ -2998,7 +2999,7 @@ int lzfw_readlink(vfs_t *p_vfs, creden_t *p_cred,
   VN_RELE(vnode);
   ZFS_EXIT(zfsvfs);
 
-  if(!i_error)
+  if (!i_error)
     psz_content[uio.uio_loffset] = '\0';
   else
     psz_content[0] = '\0';
@@ -3023,7 +3024,7 @@ int lzfw_link(vfs_t *p_vfs, creden_t *p_cred, inogen_t parent,
   znode_t *parent_znode, *target_znode;
 
   ZFS_ENTER(zfsvfs);
-  if((i_error = zfs_zget(zfsvfs, parent.inode, &parent_znode,
+  if ((i_error = zfs_zget(zfsvfs, parent.inode, &parent_znode,
 			 B_FALSE))) {
     ZFS_EXIT(zfsvfs);
     return i_error;
@@ -3031,13 +3032,13 @@ int lzfw_link(vfs_t *p_vfs, creden_t *p_cred, inogen_t parent,
   ASSERT(parent_znode);
 
   // Check the generation
-  if(parent_znode->z_phys->zp_gen != parent.generation) {
+  if (parent_znode->z_phys->zp_gen != parent.generation) {
     VN_RELE(ZTOV(parent_znode));
     ZFS_EXIT(zfsvfs);
     return ENOENT;
   }
 
-  if((i_error = zfs_zget(zfsvfs, target.inode, &target_znode,
+  if ((i_error = zfs_zget(zfsvfs, target.inode, &target_znode,
 			 B_FALSE))) {
     VN_RELE((ZTOV(parent_znode)));
     ZFS_EXIT(zfsvfs);
@@ -3046,7 +3047,7 @@ int lzfw_link(vfs_t *p_vfs, creden_t *p_cred, inogen_t parent,
   ASSERT(target_znode);
 
   // Check the generation
-  if(target_znode->z_phys->zp_gen != target.generation) {
+  if (target_znode->z_phys->zp_gen != target.generation) {
     VN_RELE(ZTOV(target_znode));
     VN_RELE(ZTOV(parent_znode));
     ZFS_EXIT(zfsvfs);
@@ -3084,7 +3085,7 @@ int lzfw_unlink(vfs_t *p_vfs, creden_t *p_cred, inogen_t parent,
 
   ZFS_ENTER(zfsvfs);
 
-  if((i_error = zfs_zget(zfsvfs, parent.inode, &parent_znode,
+  if ((i_error = zfs_zget(zfsvfs, parent.inode, &parent_znode,
 			 B_FALSE))) {
     ZFS_EXIT(zfsvfs);
     return i_error;
@@ -3092,7 +3093,7 @@ int lzfw_unlink(vfs_t *p_vfs, creden_t *p_cred, inogen_t parent,
   ASSERT(parent_znode);
 
   // Check the generation
-  if(parent_znode->z_phys->zp_gen != parent.generation) {
+  if (parent_znode->z_phys->zp_gen != parent.generation) {
     VN_RELE(ZTOV(parent_znode));
     ZFS_EXIT(zfsvfs);
     return ENOENT;
@@ -3158,7 +3159,7 @@ int lzfw_rename(vfs_t *p_vfs, creden_t *p_cred, inogen_t parent,
 
   ZFS_ENTER(zfsvfs);
 
-  if((i_error = zfs_zget(zfsvfs, parent.inode, &parent_znode,
+  if ((i_error = zfs_zget(zfsvfs, parent.inode, &parent_znode,
 			 B_FALSE))) {
     ZFS_EXIT(zfsvfs);
     return i_error;
@@ -3166,13 +3167,13 @@ int lzfw_rename(vfs_t *p_vfs, creden_t *p_cred, inogen_t parent,
   ASSERT(parent_znode);
 
   // Check the generation
-  if(parent_znode->z_phys->zp_gen != parent.generation) {
+  if (parent_znode->z_phys->zp_gen != parent.generation) {
     VN_RELE(ZTOV(parent_znode));
     ZFS_EXIT(zfsvfs);
     return ENOENT;
   }
 
-  if((i_error = zfs_zget(zfsvfs, new_parent.inode,
+  if ((i_error = zfs_zget(zfsvfs, new_parent.inode,
 			 &new_parent_znode, B_FALSE))) {
     VN_RELE(ZTOV(parent_znode));
     ZFS_EXIT(zfsvfs);
@@ -3181,7 +3182,7 @@ int lzfw_rename(vfs_t *p_vfs, creden_t *p_cred, inogen_t parent,
   ASSERT(new_parent_znode);
 
   // Check the generation
-  if(new_parent_znode->z_phys->zp_gen != new_parent.generation) {
+  if (new_parent_znode->z_phys->zp_gen != new_parent.generation) {
     VN_RELE(ZTOV(new_parent_znode));
     VN_RELE(ZTOV(parent_znode));
     ZFS_EXIT(zfsvfs);
@@ -3252,14 +3253,14 @@ int lzfw_truncate(vfs_t *p_vfs, creden_t *p_cred, inogen_t file,
   int i_error;
 
   ZFS_ENTER(zfsvfs);
-  if((i_error = zfs_zget(zfsvfs, file.inode, &znode, B_TRUE))) {
+  if ((i_error = zfs_zget(zfsvfs, file.inode, &znode, B_TRUE))) {
     ZFS_EXIT(zfsvfs);
     return i_error;
   }
   ASSERT(znode);
 
   // Check the generation
-  if(znode->z_phys->zp_gen != file.generation) {
+  if (znode->z_phys->zp_gen != file.generation) {
     VN_RELE(ZTOV(znode));
     ZFS_EXIT(zfsvfs);
     return ENOENT;
