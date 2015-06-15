@@ -651,7 +651,8 @@ static int lzfw_zfs_list_callback(zfs_handle_t *p_zfs, void *data)
     }
     else if(zfs_prop_userquota(pl->pl_user_prop)) {
       if(zfs_prop_get_userquota(p_zfs, pl->pl_user_prop,
-				property, sizeof (property), B_FALSE) != 0)
+				property, sizeof (property),
+				B_FALSE) != 0)
 	propstr = "-";
       else
 	propstr = property;
@@ -781,6 +782,7 @@ int lzfw_datasets_iter(libzfs_handle_t *zhd,
       libzfs_zfs_close(a_zhp);
     }
   }
+
  rele:
   dmu_objset_rele(os, FTAG);
   return error;
@@ -803,7 +805,9 @@ int lzfw_zfs_snapshot(lzfw_handle_t *p_zhd, const char *psz_zfs,
 
   /**@TODO: check the name of the filesystem and snapshot*/
 
-  if(!(p_zfs = libzfs_zfs_open((libzfs_handle_t*)p_zhd, psz_zfs, ZFS_TYPE_FILESYSTEM | ZFS_TYPE_VOLUME, ppsz_error)))
+  if(!(p_zfs = libzfs_zfs_open((libzfs_handle_t*)p_zhd, psz_zfs,
+			       ZFS_TYPE_FILESYSTEM | ZFS_TYPE_VOLUME,
+			       ppsz_error)))
     return ENOENT;
 
   if((i_error = dmu_objset_snapshot(p_zfs->zfs_name,
@@ -1046,6 +1050,7 @@ vfs_t *lzfw_mount(const char *psz_zpool, const char *psz_dir,
       free(p_vfs);
       return NULL;
     }
+
   return p_vfs;
 }
 
@@ -1151,7 +1156,8 @@ int lzfw_lookup(vfs_t *p_vfs, creden_t *p_cred, inogen_t parent,
 
   ZFS_ENTER(zfsvfs);
 
-  if((i_error = zfs_zget(zfsvfs, parent.inode, &parent_znode, B_TRUE))) {
+  if((i_error = zfs_zget(zfsvfs, parent.inode, &parent_znode,
+			 B_TRUE))) {
     ZFS_EXIT(zfsvfs);
     return i_error;
   }
@@ -1240,26 +1246,25 @@ int lzfw_access(vfs_t *p_vfs, creden_t *p_cred, inogen_t object,
 		int mask)
 {
   zfsvfs_t *zfsvfs = p_vfs->vfs_data;
-  znode_t *p_znode;
+  znode_t *znode;
   int i_error;
 
   ZFS_ENTER(zfsvfs);
-  if((i_error = zfs_zget(zfsvfs, object.inode, &p_znode, B_TRUE)))
-    {
-      ZFS_EXIT(zfsvfs);
-      return i_error;
-    }
-  ASSERT(p_znode);
-  // Check the generation
-  if(p_znode->z_phys->zp_gen != object.generation)
-    {
-      VN_RELE(ZTOV(p_znode));
-      ZFS_EXIT(zfsvfs);
-      return ENOENT;
-    }
+  if((i_error = zfs_zget(zfsvfs, object.inode, &znode, B_TRUE))) {
+    ZFS_EXIT(zfsvfs);
+    return i_error;
+  }
+  ASSERT(znode);
 
-  vnode_t *p_vnode = ZTOV(p_znode);
-  ASSERT(p_vnode);
+  // Check the generation
+  if(znode->z_phys->zp_gen != object.generation) {
+    VN_RELE(ZTOV(znode));
+    ZFS_EXIT(zfsvfs);
+    return ENOENT;
+  }
+
+  vnode_t *vnode = ZTOV(znode);
+  ASSERT(vnode);
 
   int mode = 0;
   if(mask & R_OK)
@@ -1269,9 +1274,9 @@ int lzfw_access(vfs_t *p_vfs, creden_t *p_cred, inogen_t object,
   if(mask & X_OK)
     mode |= VEXEC;
 
-  i_error = VOP_ACCESS(p_vnode, mode, 0, (cred_t*)p_cred, NULL);
+  i_error = VOP_ACCESS(vnode, mode, 0, (cred_t*)p_cred, NULL);
 
-  VN_RELE(p_vnode);
+  VN_RELE(vnode);
   ZFS_EXIT(zfsvfs);
 
   return i_error;
@@ -1293,39 +1298,38 @@ int lzfw_open(vfs_t *p_vfs, creden_t *p_cred, inogen_t object,
   int mode = 0, flags = 0, i_error;
   lzwu_flags2zfs(i_flags, &flags, &mode);
 
-  znode_t *p_znode;
+  znode_t *znode;
 
   ZFS_ENTER(zfsvfs);
-  if((i_error = zfs_zget(zfsvfs, object.inode, &p_znode, B_FALSE)))
-    {
-      ZFS_EXIT(zfsvfs);
-      return i_error;
-    }
-  ASSERT(p_znode);
+  if((i_error = zfs_zget(zfsvfs, object.inode, &znode, B_FALSE))) {
+    ZFS_EXIT(zfsvfs);
+    return i_error;
+  }
+  ASSERT(znode);
   // Check the generation
-  if(p_znode->z_phys->zp_gen != object.generation)
-    {
-      VN_RELE(ZTOV(p_znode));
-      ZFS_EXIT(zfsvfs);
-      return ENOENT;
-    }
 
-  vnode_t *p_vnode = ZTOV(p_znode);
-  ASSERT(p_vnode != NULL);
+  if(znode->z_phys->zp_gen != object.generation) {
+    VN_RELE(ZTOV(znode));
+    ZFS_EXIT(zfsvfs);
+    return ENOENT;
+  }
 
-  vnode_t *p_old_vnode = p_vnode;
+  vnode_t *vnode = ZTOV(znode);
+  ASSERT(vnode != NULL);
+
+  vnode_t *old_vnode = vnode;
 
   // Check errors
-  if((i_error = VOP_OPEN(&p_vnode, flags, (cred_t*)p_cred, NULL)))
-    {
-      //FIXME: memleak ?
-      ZFS_EXIT(zfsvfs);
-      return i_error;
-    }
-  ASSERT(p_old_vnode == p_vnode);
+  if((i_error = VOP_OPEN(&vnode, flags, (cred_t*)p_cred, NULL))) {
+    //FIXME: memleak ?
+    ZFS_EXIT(zfsvfs);
+    return i_error;
+  }
+  ASSERT(old_vnode == vnode);
 
   ZFS_EXIT(zfsvfs);
-  *pp_vnode = p_vnode;
+
+  *pp_vnode = vnode;
   return 0;
 }
 
@@ -1397,8 +1401,8 @@ int lzfw_openat(vfs_t *p_vfs, creden_t *p_cred,
   ASSERT(old_vnode == vnode);
 
   ZFS_EXIT(zfsvfs);
-  *pp_vnode = vnode;
 
+  *pp_vnode = vnode;
   return 0;
 }
 
@@ -1427,6 +1431,7 @@ int lzfw_create(vfs_t *p_vfs, creden_t *p_cred, inogen_t parent,
     return i_error;
   }
   ASSERT(parent_znode);
+
   // Check the generation
   if(parent_znode->z_phys->zp_gen != parent.generation) {
     VN_RELE(ZTOV(parent_znode));
@@ -1457,7 +1462,9 @@ int lzfw_create(vfs_t *p_vfs, creden_t *p_cred, inogen_t parent,
 
   VN_RELE(new_vnode);
   VN_RELE(parent_vnode);
+
   ZFS_EXIT(zfsvfs);
+
   return 0;
 }
 
@@ -1554,6 +1561,7 @@ int lzfw_opendir(vfs_t *p_vfs, creden_t *p_cred,
   ASSERT(old_vnode == vnode);
 
   ZFS_EXIT(zfsvfs);
+
   *pp_vnode = vnode;
   return 0;
 }
@@ -1621,6 +1629,7 @@ int lzfw_readdir(vfs_t *p_vfs, creden_t *p_cred,
     next_entry = entry.dirent.d_off;
     index++;
   }
+
   ZFS_EXIT(zfsvfs);
 
   // Set the last element to NULL if we end before size elements
@@ -1858,9 +1867,9 @@ static int getattr_helper(vfs_t *p_vfs, creden_t *p_cred,
 
   if((i_error = VOP_GETATTR(vnode, &vattr, 0, (cred_t*)p_cred,
 			    NULL))) {
-      VN_RELE(vnode);
-      return i_error;
-    }
+    VN_RELE(vnode);
+    return i_error;
+  }
   VN_RELE(vnode);
 
   p_stat->st_dev = vattr.va_fsid;
@@ -1896,7 +1905,8 @@ int lzfw_getattr(vfs_t *p_vfs, creden_t *p_cred, inogen_t object,
   int i_error;
 
   ZFS_ENTER(zfsvfs);
-  i_error = getattr_helper(p_vfs, p_cred, object, p_stat, NULL, p_type);
+  i_error = getattr_helper(p_vfs, p_cred, object, p_stat, NULL,
+			   p_type);
   ZFS_EXIT(zfsvfs);
   return i_error;
 }
@@ -1939,33 +1949,28 @@ int lzfw_setattr(vfs_t *p_vfs, creden_t *p_cred, inogen_t object,
   ASSERT(vnode);
 
   vattr_t vattr = { 0 };
-  if(flags & LZFSW_ATTR_MODE)
-    {
-      vattr.va_mask |= AT_MODE;
-      vattr.va_mode = p_stat->st_mode;
-    }
-  if(flags & LZFSW_ATTR_UID)
-    {
-      vattr.va_mask |= AT_UID;
-      vattr.va_uid = p_stat->st_uid;
-    }
-  if(flags & LZFSW_ATTR_GID)
-    {
-      vattr.va_mask |= AT_GID;
-      vattr.va_gid = p_stat->st_gid;
-    }
-  if(flags & LZFSW_ATTR_ATIME)
-    {
-      vattr.va_mask |= AT_ATIME;
-      TIME_TO_TIMESTRUC(p_stat->st_atime, &vattr.va_atime);
-      update_time = ATTR_UTIME;
-    }
-  if(flags & LZFSW_ATTR_MTIME)
-    {
-      vattr.va_mask |= AT_MTIME;
-      TIME_TO_TIMESTRUC(p_stat->st_mtime, &vattr.va_mtime);
-      update_time = ATTR_UTIME;
-    }
+  if(flags & LZFSW_ATTR_MODE) {
+    vattr.va_mask |= AT_MODE;
+    vattr.va_mode = p_stat->st_mode;
+  }
+  if(flags & LZFSW_ATTR_UID) {
+    vattr.va_mask |= AT_UID;
+    vattr.va_uid = p_stat->st_uid;
+  }
+  if(flags & LZFSW_ATTR_GID) {
+    vattr.va_mask |= AT_GID;
+    vattr.va_gid = p_stat->st_gid;
+  }
+  if(flags & LZFSW_ATTR_ATIME) {
+    vattr.va_mask |= AT_ATIME;
+    TIME_TO_TIMESTRUC(p_stat->st_atime, &vattr.va_atime);
+    update_time = ATTR_UTIME;
+  }
+  if(flags & LZFSW_ATTR_MTIME) {
+    vattr.va_mask |= AT_MTIME;
+    TIME_TO_TIMESTRUC(p_stat->st_mtime, &vattr.va_mtime);
+    update_time = ATTR_UTIME;
+  }
 
   i_error = VOP_SETATTR(vnode, &vattr, update_time, (cred_t*)p_cred,
 			NULL);
