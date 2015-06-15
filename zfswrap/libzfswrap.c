@@ -1698,7 +1698,7 @@ int lzfw_dir_iter(lzfw_vfs_t *vfs, creden_t *cred, lzfw_vnode_t *vnode,
       cb_ctx.znode = d_znode;
 
       vattr.va_mask = AT_ALL;
-      error = VOP_GETATTR(d_znode, &vattr, 0, (cred_t*)cred,
+      error = VOP_GETATTR(d_vnode, &vattr, 0, (cred_t*)cred,
 			  NULL);
     } else {
       d_vnode = NULL;
