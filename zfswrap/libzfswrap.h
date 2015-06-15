@@ -320,6 +320,20 @@ int lzfw_access(vfs_t *p_vfs, creden_t *p_cred, inogen_t object, int mask);
 
 /**
  * Create the given file
+ * @param p_vfs: the virtual file system
+ * @param p_cred: the credentials of the user
+ * @param parent: the parent object
+ * @param psz_filename: the file name
+ * @param mode: the file mode
+ * @param p_file: return the file
+ * @return 0 in case of success the error code otherwise
+ */
+int lzfw_create(vfs_t *p_vfs, creden_t *p_cred, inogen_t parent,
+		const char *psz_filename, mode_t mode,
+		inogen_t *p_file);
+
+/**
+ * Create the given file
  * @param vfs: the virtual file system
  * @param cred: the credentials of the user
  * @param parent: parent vnode
