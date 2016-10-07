@@ -1,6 +1,6 @@
 lib_LTLIBRARIES = libzfswrap.la
 
-library_includedir=$(includedir)
+library_includedir=$(includedir)/libzfswrap
 library_include_HEADERS = libzfswrap.h \
 	portable/acl.h \
 	portable/acl_impl.h \
